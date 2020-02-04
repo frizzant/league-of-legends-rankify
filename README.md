@@ -32,8 +32,8 @@ Or install it via NPM install.
 
 ### Hints
 
-0) It will not work without a verified RIOT API key. If you request it, chances are very high that you will get it.
-0) If you **NEED** your client descriptions for something crucial, and don't want to replace them
+1) It will not work without a verified RIOT API key. If you request it, chances are very high that you will get it.
+2) If you **NEED** your client descriptions for something crucial, and don't want to replace them
 with the clients summoner names, this script does not yet offer DB saved summoner names.
 
 ---
