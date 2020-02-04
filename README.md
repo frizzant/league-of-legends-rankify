@@ -14,7 +14,7 @@ Or install it via NPM install.
 
 ### NPM Install
 
-
+<code>npm i league-of-legends-rankify</code>
 
 <hr>
 
