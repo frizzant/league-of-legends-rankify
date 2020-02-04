@@ -9,12 +9,12 @@ description in Teamspeak.
 
 ### Installation
 
-Simply copy the script <code>lol-rankify.js</code> to your Sinusbot <code>scripts/</code> folder.
+Simply copy the script `lol-rankify.js` to your Sinusbot `scripts/` folder.
 Or install it via NPM install.
 
 ### NPM Install
 
-<code>npm i league-of-legends-rankify</code>
+`npm i league-of-legends-rankify`
 
 <hr>
 
