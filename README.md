@@ -16,7 +16,7 @@ Or install it via NPM install.
 
 `npm i league-of-legends-rankify`
 
-<hr>
+---
 
 ### Usage
 
@@ -28,7 +28,7 @@ Or install it via NPM install.
 0) !lolreload (client must do this himself), !lolreload all, or wait until the client reconnects to the server.
 0) Let it do its magic.
 
-<hr>
+---
 
 ### Hints
 
@@ -36,7 +36,7 @@ Or install it via NPM install.
 0) If you **NEED** your client descriptions for something crucial, and don't want to replace them
 with the clients summoner names, this script does not yet offer DB saved summoner names.
 
-<hr>
+---
 
 ### Commands
 
@@ -55,7 +55,7 @@ Write the command to the Bot with the active script.
 >their own description, if the servergroups do not allow this. It is toggled to
 ><code>false</code> in the SB backend by default.
 
-<hr>
+---
 
 ### Minimal Ressources
 The group gets added on `event` `clientVisible`. This means, in most cases it will
@@ -64,7 +64,7 @@ This means less script executions, in favor of your server performance.
 
 ###### "I chose this method purposely over `event` `clientMove`."
 
-<hr>
+---
 
 ## Credits
 
