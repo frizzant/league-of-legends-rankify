@@ -20,13 +20,13 @@ Or install it via NPM install.
 
 ### Usage
 
-0) Ger your Riot API Key: https://developer.riotgames.com/ --> Register Product --> Personal API Key.
-0) Install/upload the script
-0) Fill out/Select options in the backend (API Key etc.) & make your server groups with the LOL icons ready
-0) Activate the lol-rankify script
-0) Fill in the Summoner Name as the description of the client. Yes names with spaces inside work.
-0) !lolreload (client must do this himself), !lolreload all, or wait until the client reconnects to the server.
-0) Let it do its magic.
+1) Get your Riot API Key: https://developer.riotgames.com/ --> Register Product --> Personal API Key.
+2) Install/upload the script
+3) Fill out/Select options in the backend (API Key etc.) & make your server groups with the LOL icons ready
+4) Activate the lol-rankify script
+5) Fill in the Summoner Name as the description of the client. Yes names with spaces inside work.
+6) !lolreload (client must do this himself), !lolreload all, or wait until the client reconnects to the server.
+7) Let it do its magic.
 
 ---
 
