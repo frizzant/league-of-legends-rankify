@@ -18,6 +18,26 @@ Or install it via NPM install.
 
 <hr>
 
+### Usage
+
+0) Ger your Riot API Key: https://developer.riotgames.com/ --> Register Product --> Personal API Key.
+0) Install/upload the script
+0) Fill out/Select options in the backend (API Key etc.) & make your server groups with the LOL icons ready
+0) Activate the lol-rankify script
+0) Fill in the Summoner Name as the description of the client. Yes names with spaces inside work.
+0) !lolreload (client must do this himself), !lolreload all, or wait until the client reconnects to the server.
+0) Let it do its magic.
+
+<hr>
+
+### Hints
+
+0) It will not work without a verified RIOT API key. If you request it, chances are very high that you will get it.
+0) If you **NEED** your client descriptions for something crucial, and don't want to replace them
+with the clients summoner names, this script does not yet offer DB saved summoner names.
+
+<hr>
+
 ### Commands
 
 Write the command to the Bot with the active script.
