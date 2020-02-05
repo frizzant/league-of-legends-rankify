@@ -1,6 +1,6 @@
 registerPlugin({
     name: 'League Of Legends Rankify',
-    version: '1.0.2',
+    version: '1.0.3',
     backends: ['ts3'],
     description: 'Adds the corresponding League Of Legends Rank for each user',
     author: 'Erin McGowan <sinusbot_lolrankify@protected.calmarsolutions.ch>',
@@ -85,22 +85,24 @@ registerPlugin({
     ],
 }, function(sinusbot, config, meta) {
     // Variables
-    const engine = require('engine');
-    const backend = require('backend');
-    const event = require('event');
-    const http = require('http');
+    const engine = require('engine')
+    const backend = require('backend')
+    const event = require('event')
+    const http = require('http')
 
-    const apiKey = config.LeagueOfLegendsApiKey;
-    const protocol = 'https://';
+    const apiKey = config.LeagueOfLegendsApiKey
+    const protocol = 'https://'
     const leagueRankGroupIDs = [config.GroupIron, config.GroupBronze, config.GroupSilver, config.GroupGold, config.GroupPlatinum, config.GroupDiamond, config.GroupMaster, config.GroupGrandmaster, config.GroupChallenger]
-    const officialRankNames = ['IRON', 'BRONZE', 'SILVER', 'GOLD', 'PLATINUM', 'DIAMOND', 'MASTER', 'GRANDMASTER', 'CHALLENGER']
+    const officialRankNamesArray = ['IRON', 'BRONZE', 'SILVER', 'GOLD', 'PLATINUM', 'DIAMOND', 'MASTER', 'GRANDMASTER', 'CHALLENGER']
     const permUserSetDescr = config.PermUserSetDescr || 'no'
+    const lvlGroupIDsArray = []
     //--
     // Derived Variables
-    let clients = backend.getClients();
-    let leagueRegionShort = ['br1', 'eun1', 'euw1', 'jp1', 'kr', 'la1', 'la2', 'na1', 'oc1', 'tr1', 'ru'];
-    let  apiUrlSummonerV4Name;
-    let apiUrlLeagueV4Summoner;
+    function clientBackend() {}
+    let clients // setting them in mainEvent now
+    let leagueRegionShort = ['br1', 'eun1', 'euw1', 'jp1', 'kr', 'la1', 'la2', 'na1', 'oc1', 'tr1', 'ru']
+    let  apiUrlSummonerV4Name
+    let apiUrlLeagueV4Summoner
     //--
     // Objects
     //--
@@ -116,10 +118,12 @@ registerPlugin({
     //--
 
     event.on('clientVisible', function (ev) {
+        backendClientsReload()
         mainEvent(client = ev.client)
     })
 
     event.on('chat', function(ev) {
+        backendClientsReload()
         if (ev.text == '!lolreload') {
             engine.log('Reloaded Rank of: ' + ev.client.name() )
             mainEvent(client = ev.client)
@@ -145,6 +149,10 @@ registerPlugin({
         }
     })
 
+    function backendClientsReload() {
+        clients = backend.getClients() // get list of all current clients
+    }
+
     function mainEvent(client) {
         if (client.description().length > 2) {
 
@@ -156,7 +164,7 @@ registerPlugin({
                 makeRequest(apiUrlSummonerV4Name)
                     .then(result => makeRequest(protocol + leagueRegionShort[config.LeagueRegion] + '.api.riotgames.com/lol/league/v4/entries/by-summoner/' + result.id + '?api_key=' + apiKey))
                     .catch(error => engine.log(error))
-                    .then(result => compareLocalGroups(result[0], client.getServerGroups(), leagueRankGroupIDs, client))
+                    .then(result => compareLocalGroups(result[0], client.getServerGroups(), leagueRankGroupIDs, officialRankNamesArray, client))
                     .catch(error => engine.log(error))
                     .then(result => engine.log(result))
                     .catch(error => engine.log(error));
@@ -166,23 +174,23 @@ registerPlugin({
         }
     }
 
-    function compareLocalGroups(parsed, currentGroups, rankGroupIDs, client) {
+    function compareLocalGroups(parsed, currentGroups, groupArrayIDs, groupNamesArray, client) {
         return new Promise(function (resolve, reject) {
             let count = 0
-            let countMax = currentGroups.length * rankGroupIDs.length
+            let countMax = currentGroups.length * groupArrayIDs.length
             let compareSwitch = false
 
             for (let currentGroup of currentGroups) {
-                for (let rankGroupID of rankGroupIDs) { // check if one of the Rank Groups match the added groups
-                    if (currentGroup.id() == rankGroupID) {
+                for (let groupID of groupArrayIDs) { // check if one of the Rank Groups match the added groups
+                    if (currentGroup.id() == groupID) {
                         count++
                         compareSwitch = true
-                        compareGroup(parsed, currentGroup.id(), client)
+                        compareGroup(parsed, currentGroup.id(), groupArrayIDs, groupNamesArray, client)
                     } else {
                         count++
                         if (count === countMax && compareSwitch === false) {
                             // engine.log('LAST')
-                            compareGroup(parsed, undefined, client)
+                            compareGroup(parsed, undefined, groupArrayIDs, groupNamesArray, client)
                             resolve()
                         }
                     }
@@ -191,11 +199,11 @@ registerPlugin({
         })
     }
 
-    function compareGroup(parsed, currentGroup, client) { // beware that currentGroup will be removed!
+    function compareGroup(parsed, currentGroup, theNewGroupIdArray, theNewGroupNameArray, client) { // beware that currentGroup will be removed!
         return new Promise(function (resolve, reject) {
             if (parsed) {
-                let newGroup = officialRankNames.indexOf(parsed.tier) // get the index by string
-                newGroup = leagueRankGroupIDs[newGroup] // insert index to get correct group
+                let newGroup = theNewGroupNameArray.indexOf(parsed.tier) // get the index by string
+                newGroup = theNewGroupIdArray[newGroup] // insert index to get correct group
 
                 if (currentGroup == newGroup) {
                     resolve()
