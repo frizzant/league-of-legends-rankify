@@ -1,6 +1,6 @@
 registerPlugin({
     name: 'League Of Legends Rankify',
-    version: '1.0.1',
+    version: '1.0.2',
     backends: ['ts3'],
     description: 'Adds the corresponding League Of Legends Rank for each user',
     author: 'Erin McGowan <sinusbot_lolrankify@protected.calmarsolutions.ch>',
