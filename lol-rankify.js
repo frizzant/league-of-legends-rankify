@@ -19,6 +19,11 @@ registerPlugin({
             options: ['br1', 'eun1', 'euw1', 'jp1', 'kr', 'la1', 'la2', 'na1', 'oc1', 'tr1', 'ru']
         },
         {
+            name: 'summonerLevelGroupIDs',
+            title: 'Add Summoner Level groups for lvl "0-25, 25+, 50+, 75+, 100+, 150+, 200+, 250+, 500+" in this order. (USE ENTER KEY)',
+            type: 'strings',
+        },
+        {
             name: 'PermUserSetDescr',
             title: 'Allow users to set their own description with !lolsetname <string>',
             type: 'select',
@@ -95,14 +100,15 @@ registerPlugin({
     const leagueRankGroupIDs = [config.GroupIron, config.GroupBronze, config.GroupSilver, config.GroupGold, config.GroupPlatinum, config.GroupDiamond, config.GroupMaster, config.GroupGrandmaster, config.GroupChallenger]
     const officialRankNamesArray = ['IRON', 'BRONZE', 'SILVER', 'GOLD', 'PLATINUM', 'DIAMOND', 'MASTER', 'GRANDMASTER', 'CHALLENGER']
     const permUserSetDescr = config.PermUserSetDescr || 'no'
-    const lvlGroupIDsArray = []
+    const summonerLevelGroupIDsArray = config.summonerLevelGroupIDs
     //--
     // Derived Variables
     function clientBackend() {}
     let clients // setting them in mainEvent now
     let leagueRegionShort = ['br1', 'eun1', 'euw1', 'jp1', 'kr', 'la1', 'la2', 'na1', 'oc1', 'tr1', 'ru']
-    let  apiUrlSummonerV4Name
+    let apiUrlSummonerV4Name
     let apiUrlLeagueV4Summoner
+    let requestArray = []
     //--
     // Objects
     //--
@@ -124,6 +130,7 @@ registerPlugin({
 
     event.on('chat', function(ev) {
         backendClientsReload()
+
         if (ev.text == '!lolreload') {
             engine.log('Reloaded Rank of: ' + ev.client.name() )
             mainEvent(client = ev.client)
@@ -132,9 +139,11 @@ registerPlugin({
         if (ev.text == '!lolreload all') {
             ev.client.chat('...reloading')
 
+            let chain = Promise.resolve();
             for (let client in clients) {
-                mainEvent(clients[client])
-                ev.client.chat('Reloaded rank of ' + clients[client].name() + '.')
+                // mainEvent(clients[client])
+                chain = chain.then(mainEvent(clients[client])) // make a promise chain which stacks on itsself
+                ev.client.chat('--> Reloaded rank of ' + clients[client].name() + '.')
             }
 
             ev.client.chat('ALL ranks reloaded.')
@@ -153,25 +162,90 @@ registerPlugin({
         clients = backend.getClients() // get list of all current clients
     }
 
-    function mainEvent(client) {
-        if (client.description().length > 2) {
+    function mainEvent(client, event) {
+        return new Promise(function (resolve, reject) {
+            requestArray = []
+            if (client.description().length > 2) {
 
-            let userName = client.description(); // Description where username is defined
-            apiUrlSummonerV4Name = protocol + leagueRegionShort[config.LeagueRegion] + '.api.riotgames.com/lol/summoner/v4/summoners/by-name/' + userName.replace(/ /g, '%20') + '?api_key=' + apiKey;
+                let userName = client.description(); // Description where username is defined
+                apiUrlSummonerV4Name = protocol + leagueRegionShort[config.LeagueRegion] + '.api.riotgames.com/lol/summoner/v4/summoners/by-name/' + userName.replace(/ /g, '%20') + '?api_key=' + apiKey;
 
-            if (client.getServerGroups().length > 0) {
+                if (client.getServerGroups().length > 0) {
 
-                makeRequest(apiUrlSummonerV4Name)
-                    .then(result => makeRequest(protocol + leagueRegionShort[config.LeagueRegion] + '.api.riotgames.com/lol/league/v4/entries/by-summoner/' + result.id + '?api_key=' + apiKey))
-                    .catch(error => engine.log(error))
-                    .then(result => compareLocalGroups(result[0], client.getServerGroups(), leagueRankGroupIDs, officialRankNamesArray, client))
-                    .catch(error => engine.log(error))
-                    .then(result => engine.log(result))
-                    .catch(error => engine.log(error));
+                    makeRequest(apiUrlSummonerV4Name) //dome for some reason first ALL the FIRS REQUESTS execute
+                        .then(result => makeRequest(protocol + leagueRegionShort[config.LeagueRegion] + '.api.riotgames.com/lol/league/v4/entries/by-summoner/' + result.id + '?api_key=' + apiKey))
+                        .catch(error => engine.log('Error: ' + error))
+                        .then(result => compareLocalGroups(result[0], client.getServerGroups(), leagueRankGroupIDs, officialRankNamesArray, client))
+                        .catch(error => engine.log('Error: ' + error))
+                        .then(result => checkSummonerLevel(summonerLevelGroupIDsArray, requestArray[0].summonerLevel, client, result))
+                        .catch(error => engine.log('Error: ' + error))
+                        .then(result => resolve(result))
+                        // .then(result => engine.log(result))
+                        .catch(error => engine.log('Error: ' + error));
 
+                }
+
+            } else {
+                resolve(client.name() + ' has no valid description.')
+            }
+        })
+    }
+
+    function removeServerGroups(groupIDsArray, client) {
+        return new Promise(function (resolve, reject) {
+            for (let group of groupIDsArray) {
+                removeServerGroupRanked(group, client)
+                if (group === groupIDsArray[groupIDsArray-1]) {
+                    resolve()
+                }
+            }
+        })
+    }
+
+    function checkSummonerLevel(groupIDsArray, level, client, request) { //todo level is currently overwritten
+        return new Promise(function (resolve, reject) {
+            // engine.log(level)
+            // engine.log(requestArray)
+            for (let array of requestArray) { //todo if possible make request execute in correct order
+                if (array.name === client.description()) {
+                    engine.log(array.name + client.description())
+                    level = array.summonerLevel
+                }
             }
 
-        }
+            if (groupIDsArray !== undefined) {
+                function execute(number) {
+                    addServerGroupRanked(groupIDsArray[number], client)
+                }
+                removeServerGroups(groupIDsArray, client) //dome: make this only remove group that is added
+
+                if (level < 25) { //-25
+                    execute(0)
+                } else if (level < 50) { //25
+                    execute(1)
+                } else if (level < 75) { //50
+                    execute(2)
+                } else if (level < 100) { //75
+                    execute(3)
+                } else if (level < 150) { //100
+                    execute(4)
+                } else if (level < 200) { //150
+                    execute(5)
+                } else if (level < 250) { //200
+                    execute(6)
+                } else if (level < 500) { //250
+                    execute(7)
+                } else if (level > 500) { //500+
+                    execute(8)
+                } else {
+                    reject('An Unknown Error Occurred. var level is not a number.')
+                }
+
+                resolve(request) // continue to forward the request
+            } else {
+                reject('Can\'t work with Array. Array empty.')
+            }
+        })
     }
 
     function compareLocalGroups(parsed, currentGroups, groupArrayIDs, groupNamesArray, client) {
@@ -186,6 +260,7 @@ registerPlugin({
                         count++
                         compareSwitch = true
                         compareGroup(parsed, currentGroup.id(), groupArrayIDs, groupNamesArray, client)
+                        resolve()
                     } else {
                         count++
                         if (count === countMax && compareSwitch === false) {
@@ -246,21 +321,25 @@ registerPlugin({
             }, function (error, response) {
 
                 if (error) {
-                    engine.log("Error: " + error)
-                    reject()
+                    // engine.log("Error: " + error)
+                    reject("Error: " + error)
                 }
 
                 if (response.statusCode == 404) {
-                    engine.log(response.status)
-                    reject()
+                    // engine.log(response.status)
+                    reject(response.status)
                 }
 
                 if (response.statusCode != 200) {
-                    engine.log("HTTP Error: " + response.status)
-                    reject()
+                    // engine.log("HTTP Error: " + response.status)
+                    reject("HTTP Error: " + response.status)
                 }
 
                 let parsed = JSON.parse(response.data)
+                requestArray.unshift(parsed)
+                engine.log('--^-^--')
+                engine.log(parsed.id)
+                engine.log('-------')
                 resolve(parsed);
 
             });
