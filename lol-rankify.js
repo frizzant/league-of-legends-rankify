@@ -337,7 +337,7 @@ registerPlugin({
 
                 let parsed = JSON.parse(response.data)
                 requestArray.unshift(parsed)
-                engine.log('--^-^--')
+                engine.log('--^-^--') //todo: remove this
                 engine.log(parsed.id)
                 engine.log('-------')
                 resolve(parsed);
