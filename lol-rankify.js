@@ -1,6 +1,6 @@
 registerPlugin({
     name: 'League Of Legends Rankify',
-    version: '1.0.3',
+    version: '1.1.0',
     backends: ['ts3'],
     description: 'Adds the corresponding League Of Legends Rank for each user',
     author: 'Erin McGowan <sinusbot_lolrankify@protected.calmarsolutions.ch>',
@@ -188,15 +188,15 @@ registerPlugin({
         })
     }
 
-    function removeServerGroups(groupIDsArray, client) {
-        return new Promise(function (resolve, reject) {
+    function compareServerGroups(serverGroupList, groupIDsArray, currentGroup, client) {
+        for (let clientGroup of serverGroupList) { // client groups
             for (let group of groupIDsArray) {
-                removeServerGroupRanked(group, client)
-                if (group === groupIDsArray[groupIDsArray-1]) {
-                    resolve()
+                if (group === clientGroup.id()) { // array of groups
+                    if (group !== currentGroup) // if not equal to group that should be added
+                        removeServerGroupRanked(group, client)
                 }
             }
-        })
+        }
     }
 
     function checkSummonerLevel(groupIDsArray, level, client, request) { //todo level is currently overwritten
@@ -205,10 +205,10 @@ registerPlugin({
 
                 if (groupIDsArray !== undefined) {
                     function execute(number) {
+                        compareServerGroups(client.getServerGroups(), groupIDsArray, groupIDsArray[number], client)
                         addServerGroupRanked(groupIDsArray[number], client)
                     }
 
-                    // removeServerGroups(groupIDsArray, client) //dome: make this only remove group that is added
 
                     if (level < 25) { //-25
                         execute(0)
@@ -258,7 +258,6 @@ registerPlugin({
                     } else {
                         count++
                         if (count === countMax && compareSwitch === false) {
-                            // engine.log('LAST')
                             compareGroup(parsed, undefined, groupArrayIDs, groupNamesArray, client)
                             resolve()
                         }
@@ -291,9 +290,14 @@ registerPlugin({
 
     function addServerGroupRanked(group, client) {
         return new Promise(function (resolve, reject) {
+            for (let groupId of client.getServerGroups()) {
+                if (groupId.id() === group) {
+                    resolve('Group exists. None added to: ' + client.name())
+                    return
+                }
+            }
             client.addToServerGroup(group)
-            engine.log('Rank added to: ' + client.name())
-            resolve()
+            resolve('Rank added for ' + client.name())
         })
     }
 
@@ -315,17 +319,14 @@ registerPlugin({
             }, function (error, response) {
 
                 if (error) {
-                    // engine.log("Error: " + error)
                     reject("Error: " + error)
                 }
 
                 if (response.statusCode == 404) {
-                    // engine.log(response.status)
                     reject(response.status)
                 }
 
                 if (response.statusCode != 200) {
-                    // engine.log("HTTP Error: " + response.status)
                     reject("HTTP Error: " + response.status)
                 }
 
