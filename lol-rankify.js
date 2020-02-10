@@ -175,7 +175,7 @@ registerPlugin({
                         .catch(error => engine.log('Error: ' + error))
                         .then(result => compareLocalGroups(result[0], client.getServerGroups(), leagueRankGroupIDs, officialRankNamesArray, client))
                         .catch(error => engine.log('Error: ' + error))
-                        .then(result => checkSummonerLevel(summonerLevelGroupIDsArray, requestArray, client, result))
+                        .then(result => checkSummonerLevel(summonerLevelGroupIDsArray, requestArray[0].summonerLevel, client, result))
                         .catch(error => engine.log('Error: ' + error))
                         .then(result => resolve(result))
                         .catch(error => engine.log('Error: ' + error));
@@ -202,18 +202,6 @@ registerPlugin({
     function checkSummonerLevel(groupIDsArray, level, client, request) { //todo level is currently overwritten
         return new Promise(function (resolve, reject) {
             if (summonerLevelGroupIDsArray) {
-                engine.log(level[0].summonerLevel)
-                engine.log(requestArray[0].revisionDate)
-                engine.log(requestArray[0].summonerLevel)
-                engine.log(requestArray[0])
-                // engine.log(level)
-                // engine.log(requestArray)
-                // for (let array of requestArray) { //todo if possible make request execute in correct order
-                //     if (array.name === client.description()) {
-                //         engine.log(array.name + client.description())
-                //         level = array.summonerLevel
-                //     }
-                // }
 
                 if (groupIDsArray !== undefined) {
                     function execute(number) {
