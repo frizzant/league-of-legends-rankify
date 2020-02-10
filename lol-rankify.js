@@ -170,7 +170,7 @@ registerPlugin({
 
                 if (client.getServerGroups().length > 0) {
 
-                    makeRequest(apiUrlSummonerV4Name) //dome for some reason first ALL the FIRST REQUESTS execute
+                    makeRequest(apiUrlSummonerV4Name)
                         .then(result => makeRequest(protocol + leagueRegionShort[config.LeagueRegion] + '.api.riotgames.com/lol/league/v4/entries/by-summoner/' + result.id + '?api_key=' + apiKey))
                         .catch(error => engine.log('Error: ' + error))
                         .then(result => compareLocalGroups(result[0], client.getServerGroups(), leagueRankGroupIDs, officialRankNamesArray, client))
@@ -199,7 +199,7 @@ registerPlugin({
         }
     }
 
-    function checkSummonerLevel(groupIDsArray, level, client, request) { //todo level is currently overwritten
+    function checkSummonerLevel(groupIDsArray, level, client, request) {
         return new Promise(function (resolve, reject) {
             if (summonerLevelGroupIDsArray) {
 
@@ -208,7 +208,6 @@ registerPlugin({
                         compareServerGroups(client.getServerGroups(), groupIDsArray, groupIDsArray[number], client)
                         addServerGroupRanked(groupIDsArray[number], client)
                     }
-
 
                     if (level < 30) { //-25
                         execute(0)
