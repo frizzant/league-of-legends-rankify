@@ -20,7 +20,7 @@ registerPlugin({
         },
         {
             name: 'summonerLevelGroupIDs',
-            title: 'Add Summoner Level groups for lvl "0-25, 25+, 50+, 75+, 100+, 150+, 200+, 250+, 500+" in this order. (USE ENTER KEY)',
+            title: 'Add Summoner Level groups for lvl "0-30, 30+, 50+, 75+, 100+, 150+, 200+, 250+, 500+" in this order. (USE ENTER KEY)',
             type: 'strings',
         },
         {
@@ -122,7 +122,6 @@ registerPlugin({
     if (!message.unranked) { message.unranked = 'Sorry. You are unranked.' }
     if (!message.newDescription) { message.newDescription = 'Your description is now: ' }
     //--
-
     event.on('clientVisible', function (ev) {
         backendClientsReload()
         mainEvent(client = ev.client)
@@ -139,10 +138,9 @@ registerPlugin({
         if (ev.text == '!lolreload all') {
             ev.client.chat('...reloading')
 
-            let chain = Promise.resolve();
+            let chain = Promise.resolve()
             for (let client in clients) {
-                // mainEvent(clients[client])
-                chain = chain.then(mainEvent(clients[client])) // make a promise chain which stacks on itsself
+                chain = chain.then(resolve => mainEvent(clients[client]));
                 ev.client.chat('--> Reloaded rank of ' + clients[client].name() + '.')
             }
 
@@ -172,15 +170,14 @@ registerPlugin({
 
                 if (client.getServerGroups().length > 0) {
 
-                    makeRequest(apiUrlSummonerV4Name) //dome for some reason first ALL the FIRS REQUESTS execute
+                    makeRequest(apiUrlSummonerV4Name) //dome for some reason first ALL the FIRST REQUESTS execute
                         .then(result => makeRequest(protocol + leagueRegionShort[config.LeagueRegion] + '.api.riotgames.com/lol/league/v4/entries/by-summoner/' + result.id + '?api_key=' + apiKey))
                         .catch(error => engine.log('Error: ' + error))
                         .then(result => compareLocalGroups(result[0], client.getServerGroups(), leagueRankGroupIDs, officialRankNamesArray, client))
                         .catch(error => engine.log('Error: ' + error))
-                        .then(result => checkSummonerLevel(summonerLevelGroupIDsArray, requestArray[0].summonerLevel, client, result))
+                        .then(result => checkSummonerLevel(summonerLevelGroupIDsArray, requestArray, client, result))
                         .catch(error => engine.log('Error: ' + error))
                         .then(result => resolve(result))
-                        // .then(result => engine.log(result))
                         .catch(error => engine.log('Error: ' + error));
 
                 }
@@ -204,46 +201,55 @@ registerPlugin({
 
     function checkSummonerLevel(groupIDsArray, level, client, request) { //todo level is currently overwritten
         return new Promise(function (resolve, reject) {
-            // engine.log(level)
-            // engine.log(requestArray)
-            for (let array of requestArray) { //todo if possible make request execute in correct order
-                if (array.name === client.description()) {
-                    engine.log(array.name + client.description())
-                    level = array.summonerLevel
-                }
-            }
+            if (summonerLevelGroupIDsArray) {
+                engine.log(level[0].summonerLevel)
+                engine.log(requestArray[0].revisionDate)
+                engine.log(requestArray[0].summonerLevel)
+                engine.log(requestArray[0])
+                // engine.log(level)
+                // engine.log(requestArray)
+                // for (let array of requestArray) { //todo if possible make request execute in correct order
+                //     if (array.name === client.description()) {
+                //         engine.log(array.name + client.description())
+                //         level = array.summonerLevel
+                //     }
+                // }
 
-            if (groupIDsArray !== undefined) {
-                function execute(number) {
-                    addServerGroupRanked(groupIDsArray[number], client)
-                }
-                removeServerGroups(groupIDsArray, client) //dome: make this only remove group that is added
+                if (groupIDsArray !== undefined) {
+                    function execute(number) {
+                        addServerGroupRanked(groupIDsArray[number], client)
+                    }
 
-                if (level < 25) { //-25
-                    execute(0)
-                } else if (level < 50) { //25
-                    execute(1)
-                } else if (level < 75) { //50
-                    execute(2)
-                } else if (level < 100) { //75
-                    execute(3)
-                } else if (level < 150) { //100
-                    execute(4)
-                } else if (level < 200) { //150
-                    execute(5)
-                } else if (level < 250) { //200
-                    execute(6)
-                } else if (level < 500) { //250
-                    execute(7)
-                } else if (level > 500) { //500+
-                    execute(8)
+                    // removeServerGroups(groupIDsArray, client) //dome: make this only remove group that is added
+
+                    if (level < 25) { //-25
+                        execute(0)
+                    } else if (level < 50) { //25
+                        execute(1)
+                    } else if (level < 75) { //50
+                        execute(2)
+                    } else if (level < 100) { //75
+                        execute(3)
+                    } else if (level < 150) { //100
+                        execute(4)
+                    } else if (level < 200) { //150
+                        execute(5)
+                    } else if (level < 250) { //200
+                        execute(6)
+                    } else if (level < 500) { //250
+                        execute(7)
+                    } else if (level > 500) { //500+
+                        execute(8)
+                    } else {
+                        reject('An Unknown Error Occurred. var level is not a number.')
+                    }
+
+                    resolve(request) // continue to forward the request
                 } else {
-                    reject('An Unknown Error Occurred. var level is not a number.')
+                    reject('Can\'t work with Array. Array empty.')
                 }
-
-                resolve(request) // continue to forward the request
             } else {
-                reject('Can\'t work with Array. Array empty.')
+                resolve(request)
             }
         })
     }
@@ -336,10 +342,7 @@ registerPlugin({
                 }
 
                 let parsed = JSON.parse(response.data)
-                requestArray.unshift(parsed)
-                engine.log('--^-^--') //todo: remove this
-                engine.log(parsed.id)
-                engine.log('-------')
+                requestArray.push(parsed)
                 resolve(parsed);
 
             });
