@@ -210,7 +210,7 @@ registerPlugin({
                     }
 
 
-                    if (level < 25) { //-25
+                    if (level < 30) { //-25
                         execute(0)
                     } else if (level < 50) { //25
                         execute(1)
