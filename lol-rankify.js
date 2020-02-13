@@ -24,6 +24,11 @@ registerPlugin({
             type: 'strings',
         },
         {
+            name: 'summonerLaneGroupIDs',
+            title: 'Add Summoner Lane groups for "TOP_LANE, MID_LANE, BOT_LANE, JUNGLE" in this order. (USE ENTER KEY)',
+            type: 'strings',
+        },
+        {
             name: 'PermUserSetDescr',
             title: 'Allow users to set their own description with !lolsetname <string>',
             type: 'select',
@@ -99,8 +104,10 @@ registerPlugin({
     const protocol = 'https://'
     const leagueRankGroupIDs = [config.GroupIron, config.GroupBronze, config.GroupSilver, config.GroupGold, config.GroupPlatinum, config.GroupDiamond, config.GroupMaster, config.GroupGrandmaster, config.GroupChallenger]
     const officialRankNamesArray = ['IRON', 'BRONZE', 'SILVER', 'GOLD', 'PLATINUM', 'DIAMOND', 'MASTER', 'GRANDMASTER', 'CHALLENGER']
+    const officialLaneNamesArray = ['TOP_LANE', 'MID_LANE', 'BOT_LANE', 'JUNGLE', 'NONE']
     const permUserSetDescr = config.PermUserSetDescr || 'no'
     const summonerLevelGroupIDsArray = config.summonerLevelGroupIDs
+    const summonerLaneGroupIDsArray = config.summonerLaneGroupIDs
     //--
     // Derived Variables
     function clientBackend() {}
@@ -206,8 +213,8 @@ registerPlugin({
         }
     }
     function test(one, two) { // todo: removeme: quick test for vars/objects/arrays etc
-        engine.log('1: ' + one)
-        engine.log('2: ' + two)
+        engine.log('test 1: ' + one)
+        engine.log('test 2: ' + two)
     }
 
     function checkLaneStats(parsed, client) {
