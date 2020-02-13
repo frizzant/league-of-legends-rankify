@@ -1,8 +1,8 @@
 registerPlugin({
     name: 'League Of Legends Rankify',
-    version: '1.1.0',
+    version: '1.1.1',
     backends: ['ts3'],
-    description: 'Adds the corresponding League Of Legends Rank for each user',
+    description: 'Adds the corresponding League Of Legends Rank & Level for each user',
     author: 'Erin McGowan <sinusbot_lolrankify@protected.calmarsolutions.ch>',
     requiredModules: ['http', 'net', 'db', 'fs'],
     vars: [
@@ -154,6 +154,9 @@ registerPlugin({
             mainEvent(client = ev.client)
             ev.client.chat(message.rankReload)
         }
+        if (ev.text == '!lollfg') {
+
+        }
     })
 
     function backendClientsReload() {
@@ -174,6 +177,10 @@ registerPlugin({
                         .then(result => makeRequest(protocol + leagueRegionShort[config.LeagueRegion] + '.api.riotgames.com/lol/league/v4/entries/by-summoner/' + result.id + '?api_key=' + apiKey))
                         .catch(error => engine.log('Error: ' + error))
                         .then(result => compareLocalGroups(result[0], client.getServerGroups(), leagueRankGroupIDs, officialRankNamesArray, client))
+                        .catch(error => engine.log('Error: ' + error))
+                        .then(result => makeRequest(protocol + leagueRegionShort[config.LeagueRegion] + '.api.riotgames.com/lol/match/v4/matchlists/by-account/' + requestArray[0].accountId + '?api_key=' + apiKey + '&endIndex=40', client))
+                        .catch(error => engine.log('Error: ' + error))
+                        .then(result => checkLaneStats(result, client))
                         .catch(error => engine.log('Error: ' + error))
                         .then(result => checkSummonerLevel(summonerLevelGroupIDsArray, requestArray[0].summonerLevel, client, result))
                         .catch(error => engine.log('Error: ' + error))
@@ -197,6 +204,36 @@ registerPlugin({
                 }
             }
         }
+    }
+    function test(one, two) { // todo: removeme: quick test for vars/objects/arrays etc
+        engine.log('1: ' + one)
+        engine.log('2: ' + two)
+    }
+
+    function checkLaneStats(parsed, client) {
+        return new Promise(function (resolve, reject) {
+
+            let map = new Map()
+            map.set('TOP_LANE', 0)
+            map.set('MID_LANE', 0)
+            map.set('BOT_LANE', 0)
+            map.set('JUNGLE', 0)
+            map.set('NONE', 0)
+
+            for (let item of parsed.matches) {
+                let number = map.get(item.lane)
+                map.set(item.lane, number + 1)
+            }
+
+            // for (const [key, value] of map.entries()) {
+            //     engine.log('key: ' + key + ' value: ' + value);
+            // }
+
+            let mostUsedLane = [...map.entries()].reduce((a, e ) => e[1] > a[1] ? e : a) // get the map with the highest value
+            let mostUsedLaneName = mostUsedLane[0]
+
+            resolve(parsed)
+        })
     }
 
     function checkSummonerLevel(groupIDsArray, level, client, request) {
@@ -253,12 +290,12 @@ registerPlugin({
                         count++
                         compareSwitch = true
                         compareGroup(parsed, currentGroup.id(), groupArrayIDs, groupNamesArray, client)
-                        resolve()
+                        resolve(parsed)
                     } else {
                         count++
                         if (count === countMax && compareSwitch === false) {
                             compareGroup(parsed, undefined, groupArrayIDs, groupNamesArray, client)
-                            resolve()
+                            resolve(parsed)
                         }
                     }
                 }
@@ -318,7 +355,7 @@ registerPlugin({
             }, function (error, response) {
 
                 if (error) {
-                    reject("Error: " + error)
+                    reject(error)
                 }
 
                 if (response.statusCode == 404) {
@@ -326,7 +363,7 @@ registerPlugin({
                 }
 
                 if (response.statusCode != 200) {
-                    reject("HTTP Error: " + response.status)
+                    reject(response.status)
                 }
 
                 let parsed = JSON.parse(response.data)
