@@ -1,6 +1,6 @@
 registerPlugin({
     name: 'League Of Legends Rankify',
-    version: '1.1.1',
+    version: '1.1.2',
     backends: ['ts3'],
     description: 'Adds the corresponding League Of Legends Rank & Level for each user',
     author: 'Erin McGowan <sinusbot_lolrankify@protected.calmarsolutions.ch>',
@@ -25,7 +25,7 @@ registerPlugin({
         },
         {
             name: 'summonerLaneGroupIDs',
-            title: 'Add Summoner Lane groups for "TOP_LANE, MID_LANE, BOT_LANE, JUNGLE" in this order. (USE ENTER KEY)',
+            title: 'Add Summoner Lane groups for "TOP_LANE, MID_LANE, BOT_LANE, JUNGLE, SUPPORT" in this order. (USE ENTER KEY)',
             type: 'strings',
         },
         {
@@ -104,7 +104,7 @@ registerPlugin({
     const protocol = 'https://'
     const leagueRankGroupIDs = [config.GroupIron, config.GroupBronze, config.GroupSilver, config.GroupGold, config.GroupPlatinum, config.GroupDiamond, config.GroupMaster, config.GroupGrandmaster, config.GroupChallenger]
     const officialRankNamesArray = ['IRON', 'BRONZE', 'SILVER', 'GOLD', 'PLATINUM', 'DIAMOND', 'MASTER', 'GRANDMASTER', 'CHALLENGER']
-    const officialLaneNamesArray = ['TOP_LANE', 'MID_LANE', 'BOT_LANE', 'JUNGLE', 'NONE']
+    const officialLaneNamesArray = ['TOP', 'MID', 'BOTTOM', 'JUNGLE', 'SUPPORT', 'NONE']
     const permUserSetDescr = config.PermUserSetDescr || 'no'
     const summonerLevelGroupIDsArray = config.summonerLevelGroupIDs
     const summonerLaneGroupIDsArray = config.summonerLaneGroupIDs
@@ -138,7 +138,7 @@ registerPlugin({
         backendClientsReload()
 
         if (ev.text == '!lolreload') {
-            engine.log('Reloaded Rank of: ' + ev.client.name() )
+            console.log('Reloaded Rank of: ' + ev.client.name() )
             mainEvent(client = ev.client)
             ev.client.chat(message.rankReload)
         }
@@ -183,7 +183,7 @@ registerPlugin({
                     makeRequest(apiUrlSummonerV4Name)
                         .then(result => makeRequest(protocol + leagueRegionShort[config.LeagueRegion] + '.api.riotgames.com/lol/league/v4/entries/by-summoner/' + result.id + '?api_key=' + apiKey))
                         .catch(error => engine.log('Error: ' + error))
-                        .then(result => compareLocalGroups(result[0], client.getServerGroups(), leagueRankGroupIDs, officialRankNamesArray, client))
+                        .then(result => compareLocalGroups(result[0], client.getServerGroups(), leagueRankGroupIDs, officialRankNamesArray, result[0].tier, client))
                         .catch(error => engine.log('Error: ' + error))
                         .then(result => makeRequest(protocol + leagueRegionShort[config.LeagueRegion] + '.api.riotgames.com/lol/match/v4/matchlists/by-account/' + requestArray[0].accountId + '?api_key=' + apiKey + '&endIndex=40', client))
                         .catch(error => engine.log('Error: ' + error))
@@ -213,33 +213,58 @@ registerPlugin({
         }
     }
     function test(one, two) { // todo: removeme: quick test for vars/objects/arrays etc
-        engine.log('test 1: ' + one)
-        engine.log('test 2: ' + two)
+        console.log('test 1: ' + one)
+        console.log('test 2: ' + two)
     }
 
     function checkLaneStats(parsed, client) {
         return new Promise(function (resolve, reject) {
+            if (summonerLaneGroupIDsArray.length > 4) {
+                let map = new Map()
+                map.set('TOP', 0)
+                map.set('MID', 0)
+                map.set('BOTTOM', 0)
+                map.set('JUNGLE', 0)
+                map.set('NONE', 0)
 
-            let map = new Map()
-            map.set('TOP_LANE', 0)
-            map.set('MID_LANE', 0)
-            map.set('BOT_LANE', 0)
-            map.set('JUNGLE', 0)
-            map.set('NONE', 0)
+                let map_role = new Map()
+                map_role.set('SOLO', 0)
+                map_role.set('DUO', 0)
+                map_role.set('NONE', 0)
+                map_role.set('DUO_CARRY', 0)
+                map_role.set('DUO_SUPPORT', 0)
 
-            for (let item of parsed.matches) {
-                let number = map.get(item.lane)
-                map.set(item.lane, number + 1)
+                for (let item of parsed.matches) {
+                    let number = map.get(item.lane)
+                    map.set(item.lane, number + 1)
+
+                    number = map_role.get(item.role)
+                    map_role.set(item.role, number + 1)
+                }
+
+                let mostUsedLane = [...map.entries()].reduce((a, e) => e[1] > a[1] ? e : a) // get the map with the highest value
+                let mostUsedLaneName = mostUsedLane[0]
+
+                let mostUsedRole = [...map_role.entries()].reduce((a, e) => e[1] > a[1] ? e : a) // get the map with the highest value
+                let mostUsedRoleName = mostUsedRole[0]
+
+                if (mostUsedLaneName === 'BOTTOM') {
+                    if (mostUsedRoleName === 'DUO_SUPPORT') {
+                        mostUsedLaneName = 'SUPPORT'
+                    }
+                }
+
+                if (mostUsedLaneName === 'NONE') { // role is unclear
+                    client.chat('Lane Preference Unclear.')
+                    resolve(parsed)
+                    return
+                }
+
+                compareLocalGroups(parsed, client.getServerGroups(), summonerLaneGroupIDsArray, officialLaneNamesArray, mostUsedLaneName, client)
+                resolve(parsed)
+            } else {
+                resolve(parsed)
             }
-
-            // for (const [key, value] of map.entries()) {
-            //     engine.log('key: ' + key + ' value: ' + value);
-            // }
-
-            let mostUsedLane = [...map.entries()].reduce((a, e ) => e[1] > a[1] ? e : a) // get the map with the highest value
-            let mostUsedLaneName = mostUsedLane[0]
-
-            resolve(parsed)
         })
     }
 
@@ -285,7 +310,7 @@ registerPlugin({
         })
     }
 
-    function compareLocalGroups(parsed, currentGroups, groupArrayIDs, groupNamesArray, client) {
+    function compareLocalGroups(parsed, currentGroups, groupArrayIDs, groupNamesArray, newGroupName, client) {
         return new Promise(function (resolve, reject) {
             let count = 0
             let countMax = currentGroups.length * groupArrayIDs.length
@@ -296,12 +321,12 @@ registerPlugin({
                     if (currentGroup.id() == groupID) {
                         count++
                         compareSwitch = true
-                        compareGroup(parsed, currentGroup.id(), groupArrayIDs, groupNamesArray, client)
+                        compareGroup(parsed, currentGroup.id(), groupArrayIDs, groupNamesArray, newGroupName, client)
                         resolve(parsed)
                     } else {
                         count++
                         if (count === countMax && compareSwitch === false) {
-                            compareGroup(parsed, undefined, groupArrayIDs, groupNamesArray, client)
+                            compareGroup(parsed, undefined, groupArrayIDs, groupNamesArray, newGroupName, client)
                             resolve(parsed)
                         }
                     }
@@ -310,10 +335,10 @@ registerPlugin({
         })
     }
 
-    function compareGroup(parsed, currentGroup, theNewGroupIdArray, theNewGroupNameArray, client) { // beware that currentGroup will be removed!
+    function compareGroup(parsed, currentGroup, theNewGroupIdArray, theNewGroupNameArray, newGroupName, client) { // beware that currentGroup will be removed!
         return new Promise(function (resolve, reject) {
             if (parsed) {
-                let newGroup = theNewGroupNameArray.indexOf(parsed.tier) // get the index by string
+                let newGroup = theNewGroupNameArray.indexOf(newGroupName) // get the index by string
                 newGroup = theNewGroupIdArray[newGroup] // insert index to get correct group
 
                 if (currentGroup == newGroup) {
