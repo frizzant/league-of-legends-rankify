@@ -1,6 +1,6 @@
 registerPlugin({
     name: 'League Of Legends Rankify',
-    version: '1.1.2',
+    version: '1.1.4',
     backends: ['ts3'],
     description: 'Adds the corresponding League Of Legends Rank & Level for each user',
     author: 'Erin McGowan <sinusbot_lolrankify@protected.calmarsolutions.ch>',
@@ -27,6 +27,13 @@ registerPlugin({
             name: 'summonerLaneGroupIDs',
             title: 'Add Summoner Lane groups for "TOP_LANE, MID_LANE, BOT_LANE, JUNGLE, SUPPORT" in this order. (USE ENTER KEY)',
             type: 'strings',
+        },
+        {
+            name: 'gameHistoryCountToConsider',
+            title: 'The ammount of lol games (history) to consider when calculation the role (blank = default 60)',
+            type: 'select',
+            placeholder: '60',
+            options: ['10', '20', '30', '40', '50', '60', '70', '80', '90', '100']
         },
         {
             name: 'PermUserSetDescr',
@@ -105,6 +112,7 @@ registerPlugin({
     const leagueRankGroupIDs = [config.GroupIron, config.GroupBronze, config.GroupSilver, config.GroupGold, config.GroupPlatinum, config.GroupDiamond, config.GroupMaster, config.GroupGrandmaster, config.GroupChallenger]
     const officialRankNamesArray = ['IRON', 'BRONZE', 'SILVER', 'GOLD', 'PLATINUM', 'DIAMOND', 'MASTER', 'GRANDMASTER', 'CHALLENGER']
     const officialLaneNamesArray = ['TOP', 'MID', 'BOTTOM', 'JUNGLE', 'SUPPORT', 'NONE']
+    const gameHistoryNumbers = ['10', '20', '30', '40', '50', '60', '70', '80', '90', '100']
     const permUserSetDescr = config.PermUserSetDescr || 'no'
     const summonerLevelGroupIDsArray = config.summonerLevelGroupIDs
     const summonerLaneGroupIDsArray = config.summonerLaneGroupIDs
@@ -116,6 +124,10 @@ registerPlugin({
     let apiUrlSummonerV4Name
     let apiUrlLeagueV4Summoner
     let requestArray = []
+    let gameHistoryCount = gameHistoryNumbers[config.gameHistoryCountToConsider]
+    if (!gameHistoryCount) {
+        gameHistoryCount = 60
+    }
     //--
     // Objects
     //--
@@ -185,7 +197,7 @@ registerPlugin({
                         .catch(error => engine.log('Error: ' + error))
                         .then(result => compareLocalGroups(result[0], client.getServerGroups(), leagueRankGroupIDs, officialRankNamesArray, result[0].tier, client))
                         .catch(error => engine.log('Error: ' + error))
-                        .then(result => makeRequest(protocol + leagueRegionShort[config.LeagueRegion] + '.api.riotgames.com/lol/match/v4/matchlists/by-account/' + requestArray[0].accountId + '?api_key=' + apiKey + '&endIndex=40', client))
+                        .then(result => makeRequest(protocol + leagueRegionShort[config.LeagueRegion] + '.api.riotgames.com/lol/match/v4/matchlists/by-account/' + requestArray[0].accountId + '?api_key=' + apiKey + '&endIndex=' + gameHistoryCount, client))
                         .catch(error => engine.log('Error: ' + error))
                         .then(result => checkLaneStats(result, client))
                         .catch(error => engine.log('Error: ' + error))
