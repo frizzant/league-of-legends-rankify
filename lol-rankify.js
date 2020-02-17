@@ -212,10 +212,6 @@ registerPlugin({
             }
         }
     }
-    function test(one, two) { // todo: removeme: quick test for vars/objects/arrays etc
-        console.log('test 1: ' + one)
-        console.log('test 2: ' + two)
-    }
 
     function checkLaneStats(parsed, client) {
         return new Promise(function (resolve, reject) {
