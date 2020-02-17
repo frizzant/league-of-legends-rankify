@@ -7,6 +7,13 @@ This script connects your Sinusbot with the League Of Legends API,
 to get the rank of your users. Simply add the LOL username as the client/user
 description in Teamspeak.
 
+### Features
+
+Automatically add
+* ELO **Rank** (Iron...Challenger)
+* **Level** (30+, 50+...500+)
+* **Role** (Top, Mid, Bot, Jungle, Support)
+
 ### Installation
 
 Simply copy the script `lol-rankify.js` to your Sinusbot `scripts/` folder.
@@ -66,6 +73,11 @@ This means less script executions, in favor of your server performance.
 
 ---
 
+### Provided by the Happy-Forever Gaming Community
+[Die Happys (link)][http://happy-forever.xyz]
+
+---
+
 ## Credits
 
 **DrWarpMan** from the SinusBot Forums -> drwarpman@gmail.com
@@ -76,3 +88,5 @@ has developed a more sophisticated version of this script, with a multitude
 of options, which is available in exchange for a donation. He has the capability
 to make any of your scripting needs reality.
 Hit him up at the above mentioned email, or via the Sinusbot Forums.
+
+[http://happy-forever.xyz]: www.happy-forever.xyz
