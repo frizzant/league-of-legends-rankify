@@ -1,6 +1,6 @@
 registerPlugin({
     name: 'League Of Legends Rankify',
-    version: '1.1.3',
+    version: '1.2.0',
     backends: ['ts3'],
     description: 'Adds the corresponding League Of Legends Rank & Level for each user',
     author: 'Erin McGowan <sinusbot_lolrankify@protected.calmarsolutions.ch>',
@@ -27,6 +27,24 @@ registerPlugin({
             name: 'summonerLaneGroupIDs',
             title: 'Add Summoner Lane groups for "TOP_LANE, MID_LANE, BOT_LANE, JUNGLE, SUPPORT" in this order. (USE ENTER KEY)',
             type: 'strings',
+        },
+        {
+            name: 'gameHistoryCountToConsider',
+            title: 'The ammount of lol games (history) to consider when calculation the role (blank = default 60)',
+            type: 'select',
+            placeholder: '60',
+            options: ['10', '20', '30', '40', '50', '60', '70', '80', '90', '100']
+        },
+        {
+            name: 'inGameGroupId',
+            title: 'Empty/blank = disabled. Add the group ID that gets added if the user is ingame.',
+            type: 'number',
+        },
+        {
+            name: 'inGameFunctionInterval',
+            title: 'How often to check if user is ingame. Default = 60. Use seconds, not milliseconds!',
+            placeholder: '60',
+            type: 'number',
         },
         {
             name: 'PermUserSetDescr',
@@ -105,9 +123,11 @@ registerPlugin({
     const leagueRankGroupIDs = [config.GroupIron, config.GroupBronze, config.GroupSilver, config.GroupGold, config.GroupPlatinum, config.GroupDiamond, config.GroupMaster, config.GroupGrandmaster, config.GroupChallenger]
     const officialRankNamesArray = ['IRON', 'BRONZE', 'SILVER', 'GOLD', 'PLATINUM', 'DIAMOND', 'MASTER', 'GRANDMASTER', 'CHALLENGER']
     const officialLaneNamesArray = ['TOP', 'MID', 'BOTTOM', 'JUNGLE', 'SUPPORT', 'NONE']
+    const gameHistoryNumbers = ['10', '20', '30', '40', '50', '60', '70', '80', '90', '100']
     const permUserSetDescr = config.PermUserSetDescr || 'no'
     const summonerLevelGroupIDsArray = config.summonerLevelGroupIDs
     const summonerLaneGroupIDsArray = config.summonerLaneGroupIDs
+    const inGameGroupId = config.inGameGroupId
     //--
     // Derived Variables
     function clientBackend() {}
@@ -116,6 +136,14 @@ registerPlugin({
     let apiUrlSummonerV4Name
     let apiUrlLeagueV4Summoner
     let requestArray = []
+    let gameHistoryCount = gameHistoryNumbers[config.gameHistoryCountToConsider]
+    if (!gameHistoryCount) {
+        gameHistoryCount = 60
+    }
+    let inGameFunctionInterval = config.inGameFunctionInterval
+    if (!inGameFunctionInterval) {
+        inGameFunctionInterval = 60
+    }
     //--
     // Objects
     //--
@@ -185,7 +213,7 @@ registerPlugin({
                         .catch(error => engine.log('Error: ' + error))
                         .then(result => compareLocalGroups(result[0], client.getServerGroups(), leagueRankGroupIDs, officialRankNamesArray, result[0].tier, client))
                         .catch(error => engine.log('Error: ' + error))
-                        .then(result => makeRequest(protocol + leagueRegionShort[config.LeagueRegion] + '.api.riotgames.com/lol/match/v4/matchlists/by-account/' + requestArray[0].accountId + '?api_key=' + apiKey + '&endIndex=40', client))
+                        .then(result => makeRequest(protocol + leagueRegionShort[config.LeagueRegion] + '.api.riotgames.com/lol/match/v4/matchlists/by-account/' + requestArray[0].accountId + '?api_key=' + apiKey + '&endIndex=' + gameHistoryCount))
                         .catch(error => engine.log('Error: ' + error))
                         .then(result => checkLaneStats(result, client))
                         .catch(error => engine.log('Error: ' + error))
@@ -201,6 +229,63 @@ registerPlugin({
             }
         })
     }
+
+
+    // -------- CHECK IF CLIENT / SUMMONER IS INGAME
+    function interval() {
+        // runs every 60 sec and runs on init.
+        backendClientsReload()
+        let statusChain = Promise.resolve()
+        for (let client of clients) {
+            statusChain = statusChain.then(resolve => checkInGameStatus(client));
+        }
+    }
+    if (inGameGroupId && inGameFunctionInterval) { // disable in-game status if no input in backend
+        interval();
+        setInterval(interval, inGameFunctionInterval * 1000);
+    }
+    function summonerNotInGame(client) {
+        return new Promise(function (resolve, reject) {
+            simpleServerGroupRemove(client, inGameGroupId)
+            resolve()
+        })
+    }
+    function summonerInGame(client) {
+        return new Promise(function (resolve, reject) {
+            addServerGroupRanked(client, inGameGroupId)
+            resolve()
+        })
+    }
+
+    function checkResult(client, result) { // used instead of .catch()
+        if (result !== undefined) {
+            summonerInGame(client, result)
+        } else {
+            summonerNotInGame(client, result)
+        }
+    }
+
+    function checkInGameStatus(client) {
+        return new Promise(function (resolve, reject) {
+
+            let userName = client.description();
+            if (userName.length > 2) {
+                apiUrlSummonerV4Name = protocol + leagueRegionShort[config.LeagueRegion] + '.api.riotgames.com/lol/summoner/v4/summoners/by-name/' + userName.replace(/ /g, '%20') + '?api_key=' + apiKey;
+
+                makeRequest(apiUrlSummonerV4Name, '', '', '', true)
+                    .then(result => makeRequest(protocol + leagueRegionShort[config.LeagueRegion] + '.api.riotgames.com/lol/spectator/v4/active-games/by-summoner/' + result.id + '?api_key=' + apiKey, '', '', '', true))
+                    .catch(result => console.log(result))
+                    .then(result => checkResult(client, result))
+                    .catch(result => console.log(result))
+                    .then(result => resolve(result))
+                    .catch(result => resolve(result))
+            } else {
+                resolve()
+            }
+
+        })
+    }
+    // -------- END
 
     function compareServerGroups(serverGroupList, groupIDsArray, currentGroup, client) {
         for (let clientGroup of serverGroupList) { // client groups
@@ -271,7 +356,7 @@ registerPlugin({
                 if (groupIDsArray !== undefined) {
                     function execute(number) {
                         compareServerGroups(client.getServerGroups(), groupIDsArray, groupIDsArray[number], client)
-                        addServerGroupRanked(groupIDsArray[number], client)
+                        addServerGroupRanked(client, groupIDsArray[number])
                     }
 
                     if (level < 30) { //-25
@@ -343,7 +428,7 @@ registerPlugin({
                     if (currentGroup !== undefined) {
                         removeServerGroupRanked(currentGroup, client)
                     }
-                    addServerGroupRanked(newGroup, client)
+                    addServerGroupRanked(client, newGroup)
                     resolve()
                 }
             } else {
@@ -352,16 +437,22 @@ registerPlugin({
         })
     }
 
-    function addServerGroupRanked(group, client) {
+    function addServerGroupRanked(client, group) {
         return new Promise(function (resolve, reject) {
+            let count = 0
+            let max = client.getServerGroups().length
             for (let groupId of client.getServerGroups()) {
-                if (groupId.id() === group) {
+                if (groupId.id() == group) {
                     resolve('Group exists. None added to: ' + client.name())
                     return
                 }
+                count++
+                if (count === max) {
+                    client.addToServerGroup(group)
+                    resolve('Rank added for ' + client.name())
+                }
             }
-            client.addToServerGroup(group)
-            resolve('Rank added for ' + client.name())
+
         })
     }
 
@@ -372,7 +463,18 @@ registerPlugin({
         })
     }
 
-    function makeRequest(url, method, datatype, timeout) {
+    function simpleServerGroupRemove(client, groupToRemove) {
+        return new Promise(function (resolve, reject) {
+            for (let group of client.getServerGroups()) {
+                if (group.id() == groupToRemove) {
+                    client.removeFromServerGroup(groupToRemove)
+                    resolve()
+                }
+            }
+        })
+    }
+
+    function makeRequest(url, method, datatype, timeout, prevent_push_array) {
         return new Promise(function (resolve, reject) {
 
             http.simpleRequest({
@@ -395,7 +497,9 @@ registerPlugin({
                 }
 
                 let parsed = JSON.parse(response.data)
-                requestArray.push(parsed)
+                if (!prevent_push_array) { // stops the array push if true
+                    requestArray.push(parsed)
+                }
                 resolve(parsed);
 
             });
