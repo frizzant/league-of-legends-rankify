@@ -13,6 +13,7 @@ Automatically add
 * ELO **Rank** (Iron...Challenger)
 * **Level** (30+, 50+...500+)
 * **Role** (Top, Mid, Bot, Jungle, Support)
+* **In Game Status**
 
 ### Installation
 
