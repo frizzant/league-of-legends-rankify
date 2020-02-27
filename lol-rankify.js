@@ -190,8 +190,21 @@ registerPlugin({
             mainEvent(client = ev.client)
             ev.client.chat(message.rankReload)
         }
-        if (ev.text == '!lollfg') {
+        if (ev.text == '!lolignoreme') {
+            lolIgnore()
+            function lolIgnore () {
+                let clientUID = ev.client.uid()
+                let status = store.get(clientUID + '_ignoreme')
 
+                if (status !== false) {
+                    store.set(clientUID + '_ignoreme', false)
+                    ev.client.chat('Your InGame status is now INVISIBLE/HIDDEN.')
+                    simpleServerGroupRemove(ev.client, inGameGroupId)
+                } else {
+                    store.unset(clientUID + '_ignoreme')
+                    ev.client.chat('Your InGame status is now VISIBLE.')
+                }
+            }
         }
     })
 
@@ -273,7 +286,7 @@ registerPlugin({
         return new Promise(function (resolve, reject) {
 
             let userName = client.description();
-            if (userName.length > 2) {
+            if (userName.length > 2 && store.get(client.uid() + '_ignoreme') !== false) {
                 apiUrlSummonerV4Name = protocol + leagueRegionShort[config.LeagueRegion] + '.api.riotgames.com/lol/summoner/v4/summoners/by-name/' + userName.replace(/ /g, '%20') + '?api_key=' + apiKey;
 
                 makeRequest(apiUrlSummonerV4Name, '', '', '', true)
