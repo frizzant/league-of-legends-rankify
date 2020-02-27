@@ -220,6 +220,7 @@ registerPlugin({
                         .then(result => checkSummonerLevel(summonerLevelGroupIDsArray, requestArray[0].summonerLevel, client, result))
                         .catch(error => engine.log('Error: ' + error))
                         .then(result => {
+                            console.log(requestArray)
                             requestArray = []
                             resolve(result)
                         })
