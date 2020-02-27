@@ -200,7 +200,7 @@ registerPlugin({
 
     function mainEvent(client, event) {
         return new Promise(function (resolve, reject) {
-            requestArray = []
+            // requestArray = []
             if (client.description().length > 2) {
 
                 let userName = client.description(); // Description where username is defined
@@ -219,7 +219,10 @@ registerPlugin({
                         .catch(error => engine.log('Error: ' + error))
                         .then(result => checkSummonerLevel(summonerLevelGroupIDsArray, requestArray[0].summonerLevel, client, result))
                         .catch(error => engine.log('Error: ' + error))
-                        .then(result => resolve(result))
+                        .then(result => {
+                            requestArray = []
+                            resolve(result)
+                        })
                         .catch(error => engine.log('Error: ' + error));
 
                 }
