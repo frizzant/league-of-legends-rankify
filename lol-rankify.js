@@ -1,10 +1,10 @@
 registerPlugin({
     name: 'League Of Legends Rankify',
-    version: '1.2.0',
+    version: '1.2.1',
     backends: ['ts3'],
     description: 'Adds the corresponding League Of Legends Rank & Level for each user',
     author: 'Erin McGowan <sinusbot_lolrankify@protected.calmarsolutions.ch>',
-    requiredModules: ['http', 'net', 'db', 'fs'],
+    requiredModules: ['http', 'store'],
     vars: [
         {
             name: 'LeagueOfLegendsApiKey',
@@ -117,6 +117,7 @@ registerPlugin({
     const backend = require('backend')
     const event = require('event')
     const http = require('http')
+    const store = require('store')
 
     const apiKey = config.LeagueOfLegendsApiKey
     const protocol = 'https://'
