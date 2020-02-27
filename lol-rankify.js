@@ -237,12 +237,12 @@ registerPlugin({
         backendClientsReload()
         let statusChain = Promise.resolve()
         for (let client of clients) {
-            statusChain = statusChain.then(resolve => checkInGameStatus(client));
+            statusChain = statusChain.then(result => checkInGameStatus(client))
         }
     }
     if (inGameGroupId && inGameFunctionInterval) { // disable in-game status if no input in backend
         interval();
-        setInterval(interval, inGameFunctionInterval * 1000);
+        setInterval(interval, inGameFunctionInterval * 1000)
     }
     function summonerNotInGame(client) {
         return new Promise(function (resolve, reject) {
@@ -258,11 +258,14 @@ registerPlugin({
     }
 
     function checkResult(client, result) { // used instead of .catch()
-        if (result !== undefined) {
-            summonerInGame(client, result)
-        } else {
-            summonerNotInGame(client, result)
-        }
+        return new Promise(function (resolve, reject) {
+            if (result !== undefined) {
+                summonerInGame(client, result)
+            } else {
+                summonerNotInGame(client, result)
+            }
+            resolve()
+        })
     }
 
     function checkInGameStatus(client) {
@@ -274,13 +277,12 @@ registerPlugin({
 
                 makeRequest(apiUrlSummonerV4Name, '', '', '', true)
                     .then(result => makeRequest(protocol + leagueRegionShort[config.LeagueRegion] + '.api.riotgames.com/lol/spectator/v4/active-games/by-summoner/' + result.id + '?api_key=' + apiKey, '', '', '', true))
-                    .catch(result => console.log(result))
+                    .catch(result => console.log('Failed. "' + client.name() + '" is not InGame: ' + result))
                     .then(result => checkResult(client, result))
-                    .catch(result => console.log(result))
-                    .then(result => resolve(result))
-                    .catch(result => resolve(result))
+                    .catch(result => console.log('Unexpected Error: ' + result))
+                    .then(result => resolve('Success. "' + client.name() + '" is InGame.'))
             } else {
-                resolve()
+                resolve('No Summoner Name found for ' + client.name() + '.')
             }
 
         })
