@@ -122,7 +122,7 @@ registerPlugin({
             placeholder: 'Your rank was reloaded.',
         },
     ],
-}, function(sinusbot, config, meta) {
+}, function(sinusbot, config) {
     // Variables
     const engine = require('engine')
     const backend = require('backend')
