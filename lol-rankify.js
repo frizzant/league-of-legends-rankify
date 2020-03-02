@@ -126,8 +126,8 @@ registerPlugin({
 
     const apiKey = config.LeagueOfLegendsApiKey
     const protocol = 'https://'
-    const leagueRankGroupIDs = [config.GroupIron, config.GroupBronze, config.GroupSilver, config.GroupGold, config.GroupPlatinum, config.GroupDiamond, config.GroupMaster, config.GroupGrandmaster, config.GroupChallenger]
     const groupUndefined = config.GroupUndefined
+    const leagueRankGroupIDs = [config.GroupIron, config.GroupBronze, config.GroupSilver, config.GroupGold, config.GroupPlatinum, config.GroupDiamond, config.GroupMaster, config.GroupGrandmaster, config.GroupChallenger]
     const officialRankNamesArray = ['IRON', 'BRONZE', 'SILVER', 'GOLD', 'PLATINUM', 'DIAMOND', 'MASTER', 'GRANDMASTER', 'CHALLENGER']
     const officialLaneNamesArray = ['TOP', 'MID', 'BOTTOM', 'JUNGLE', 'SUPPORT', 'NONE']
     const gameHistoryNumbers = ['10', '20', '30', '40', '50', '60', '70', '80', '90', '100']
@@ -231,9 +231,10 @@ registerPlugin({
                         .then(result => makeRequest(protocol + leagueRegionShort[config.LeagueRegion] + '.api.riotgames.com/lol/league/v4/entries/by-summoner/' + result.id + '?api_key=' + apiKey))
                         .catch(error => engine.log('Error: ' + error))
                         .then(result => {
-                            if (result[0].tier) {
+                            if (result[0] && result[0].tier) {
                                 compareLocalGroups(result[0], client.getServerGroups(), leagueRankGroupIDs, officialRankNamesArray, result[0].tier, client)
                             } else if (groupUndefined) {
+                                console.log('-------------WORKS---------')
                                 addServerGroupRanked(client, groupUndefined)
                             }
                         })
@@ -443,6 +444,7 @@ registerPlugin({
                     }
                 }
             }
+            simpleServerGroupRemove(client, groupUndefined) // remove rank undefined group if client has it
         })
     }
 
