@@ -1,6 +1,6 @@
 registerPlugin({
     name: 'League Of Legends Rankify',
-    version: '1.2.1',
+    version: '1.3.0',
     backends: ['ts3'],
     description: 'Adds the corresponding League Of Legends Rank & Level for each user',
     author: 'Erin McGowan <sinusbot_lolrankify@protected.calmarsolutions.ch>',
@@ -54,6 +54,11 @@ registerPlugin({
             placeholder: 'Default = no'
         },
         { //-- Ranks
+            name: 'GroupUndefined',
+            title: 'Input Group if Unranked (Group ID). (NOT REQUIRED!)',
+            type: 'number'
+        },
+        {
             name: 'GroupIron',
             title: 'Input Group For Iron (Group ID)',
             type: 'number'
@@ -122,6 +127,7 @@ registerPlugin({
     const apiKey = config.LeagueOfLegendsApiKey
     const protocol = 'https://'
     const leagueRankGroupIDs = [config.GroupIron, config.GroupBronze, config.GroupSilver, config.GroupGold, config.GroupPlatinum, config.GroupDiamond, config.GroupMaster, config.GroupGrandmaster, config.GroupChallenger]
+    const groupUndefined = config.GroupUndefined
     const officialRankNamesArray = ['IRON', 'BRONZE', 'SILVER', 'GOLD', 'PLATINUM', 'DIAMOND', 'MASTER', 'GRANDMASTER', 'CHALLENGER']
     const officialLaneNamesArray = ['TOP', 'MID', 'BOTTOM', 'JUNGLE', 'SUPPORT', 'NONE']
     const gameHistoryNumbers = ['10', '20', '30', '40', '50', '60', '70', '80', '90', '100']
@@ -224,7 +230,13 @@ registerPlugin({
                     makeRequest(apiUrlSummonerV4Name)
                         .then(result => makeRequest(protocol + leagueRegionShort[config.LeagueRegion] + '.api.riotgames.com/lol/league/v4/entries/by-summoner/' + result.id + '?api_key=' + apiKey))
                         .catch(error => engine.log('Error: ' + error))
-                        .then(result => compareLocalGroups(result[0], client.getServerGroups(), leagueRankGroupIDs, officialRankNamesArray, result[0].tier, client))
+                        .then(result => {
+                            if (result[0].tier) {
+                                compareLocalGroups(result[0], client.getServerGroups(), leagueRankGroupIDs, officialRankNamesArray, result[0].tier, client)
+                            } else if (groupUndefined) {
+                                addServerGroupRanked(client, groupUndefined)
+                            }
+                        })
                         .catch(error => engine.log('Error: ' + error))
                         .then(result => makeRequest(protocol + leagueRegionShort[config.LeagueRegion] + '.api.riotgames.com/lol/match/v4/matchlists/by-account/' + requestArray[0].accountId + '?api_key=' + apiKey + '&endIndex=' + gameHistoryCount))
                         .catch(error => engine.log('Error: ' + error))
