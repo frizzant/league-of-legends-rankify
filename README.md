@@ -3,7 +3,14 @@
 
 ![rankify](img/lolrankify_logo_preview.png "LoL Rankify Preview Logo")
 
-[![Build Status](https://travis-ci.com/frizzant/league-of-legends-rankify.svg?branch=master)](https://travis-ci.com/frizzant/league-of-legends-rankify)
+![Build Status](https://travis-ci.com/frizzant/league-of-legends-rankify.svg?branch=master)
+![GitHub](https://img.shields.io/github/license/frizzant/league-of-legends-rankify)
+![GitHub issues](https://img.shields.io/github/issues-raw/frizzant/league-of-legends-rankify)
+![GitHub closed issues](https://img.shields.io/github/issues-closed-raw/frizzant/league-of-legends-rankify)
+![GitHub repo size](https://img.shields.io/github/repo-size/frizzant/league-of-legends-rankify)
+![GitHub last commit](https://img.shields.io/github/last-commit/frizzant/league-of-legends-rankify)
+
+![GitHub stars](https://img.shields.io/github/stars/frizzant/league-of-legends-rankify?style=social)
 
 This script connects your Sinusbot with the League Of Legends API,
 to get the rank of your users. Simply add the LOL username as the client/user
