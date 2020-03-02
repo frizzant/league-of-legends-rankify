@@ -1,6 +1,6 @@
 registerPlugin({
     name: 'League Of Legends Rankify',
-    version: '1.3.0',
+    version: '1.3.1',
     backends: ['ts3'],
     description: 'Adds the corresponding League Of Legends Rank, Level, Role & InGame status for each user',
     author: 'Erin McGowan <sinusbot_lolrankify@protected.calmarsolutions.ch>',
@@ -17,6 +17,12 @@ registerPlugin({
             title: 'Select Riot Games Region',
             type: 'select',
             options: ['br1', 'eun1', 'euw1', 'jp1', 'kr', 'la1', 'la2', 'na1', 'oc1', 'tr1', 'ru']
+        },
+        {
+            name: 'NameForSummonerSearch',
+            title: 'Select if you want to use "TS3 User Nicknames" INSTEAD of the "TS3 User Description" in this script. DEFAULT = description',
+            type: 'checkbox',
+            options: ['useNickname']
         },
         {
             name: 'summonerLevelGroupIDs',
@@ -135,10 +141,12 @@ registerPlugin({
     const summonerLevelGroupIDsArray = config.summonerLevelGroupIDs
     const summonerLaneGroupIDsArray = config.summonerLaneGroupIDs
     const inGameGroupId = config.inGameGroupId
+    const nameForSummonerSearch = config.NameForSummonerSearch
     //--
     // Derived Variables
     function clientBackend() {}
     let clients // setting them in mainEvent now
+    let clientName
     let leagueRegionShort = ['br1', 'eun1', 'euw1', 'jp1', 'kr', 'la1', 'la2', 'na1', 'oc1', 'tr1', 'ru']
     let apiUrlSummonerV4Name
     let apiUrlLeagueV4Summoner
@@ -166,15 +174,26 @@ registerPlugin({
     //--
     event.on('clientVisible', function (ev) {
         backendClientsReload()
-        mainEvent(client = ev.client)
+        if (nameForSummonerSearch) {
+            clientName = ev.client.nick()
+        } else {
+            clientName = ev.client.description()
+        }
+        mainEvent(client = ev.client, clientName)
     })
 
     event.on('chat', function(ev) {
         backendClientsReload()
 
+        if (nameForSummonerSearch) {
+            clientName = ev.client.nick()
+        } else {
+            clientName = ev.client.description()
+        }
+
         if (ev.text == '!lolreload') {
             console.log('Reloaded Rank of: ' + ev.client.name() )
-            mainEvent(client = ev.client)
+            mainEvent(client = ev.client, clientName)
             ev.client.chat(message.rankReload)
         }
         if (ev.text == '!lolreload all') {
@@ -182,7 +201,13 @@ registerPlugin({
 
             let chain = Promise.resolve()
             for (let client in clients) {
-                chain = chain.then(resolve => mainEvent(clients[client]));
+                if (nameForSummonerSearch) {
+                    clientName = client.nick()
+                } else {
+                    clientName = client.description()
+                }
+
+                chain = chain.then(resolve => mainEvent(clients[client], clientName));
                 ev.client.chat('--> Reloaded rank of ' + clients[client].name() + '.')
             }
 
@@ -193,7 +218,7 @@ registerPlugin({
             ev.client.setDescription(newDescription)
             ev.client.chat(message.newDescription + newDescription)
 
-            mainEvent(client = ev.client)
+            mainEvent(client = ev.client, clientName)
             ev.client.chat(message.rankReload)
         }
         if (ev.text == '!lolignoreme') {
@@ -218,11 +243,10 @@ registerPlugin({
         clients = backend.getClients() // get list of all current clients
     }
 
-    function mainEvent(client, event) {
+    function mainEvent(client, userName) {
         return new Promise(function (resolve, reject) {
-            if (client.description().length > 2) {
+            if (userName.length > 2) {
 
-                let userName = client.description(); // Description where username is defined
                 apiUrlSummonerV4Name = protocol + leagueRegionShort[config.LeagueRegion] + '.api.riotgames.com/lol/summoner/v4/summoners/by-name/' + userName.replace(/ /g, '%20') + '?api_key=' + apiKey;
 
                 if (client.getServerGroups().length > 0) {
