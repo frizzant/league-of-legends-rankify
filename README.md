@@ -3,6 +3,8 @@
 
 ![rankify](img/lolrankify_logo_preview.png "LoL Rankify Preview Logo")
 
+[![Build Status](https://travis-ci.com/frizzant/league-of-legends-rankify.svg?branch=master)](https://travis-ci.com/frizzant/league-of-legends-rankify)
+
 This script connects your Sinusbot with the League Of Legends API,
 to get the rank of your users. Simply add the LOL username as the client/user
 description in Teamspeak.
