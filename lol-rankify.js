@@ -202,11 +202,9 @@ registerPlugin({
             let chain = Promise.resolve()
             for (let client in clients) {
                 if (nameForSummonerSearch) {
-                    // clientName = clients[client].nick()
-                    chain = chain.then(resolve => mainEvent(clients[client], clients[client].nick())).then(delay(500))
+                    chain = chain.then(resolve => mainEvent(clients[client], clients[client].nick()))
                 } else {
-                    // clientName = clients[client].description()
-                    chain = chain.then(resolve => mainEvent(clients[client], clients[client].description())).then(delay(500))
+                    chain = chain.then(resolve => mainEvent(clients[client], clients[client].description()))
                 }
 
                 ev.client.chat('--> Reloaded rank of ' + clients[client].name() + '.')
@@ -248,6 +246,7 @@ registerPlugin({
 
     function mainEvent(client, userName) {
         return new Promise(function (resolve, reject) {
+            console.log(client.name())
             if (userName.length > 2) {
 
                 apiUrlSummonerV4Name = protocol + leagueRegionShort[config.LeagueRegion] + '.api.riotgames.com/lol/summoner/v4/summoners/by-name/' + userName.replace(/ /g, '%20') + '?api_key=' + apiKey;
@@ -255,13 +254,12 @@ registerPlugin({
                 if (client.getServerGroups().length > 0) {
 
                     makeRequest(apiUrlSummonerV4Name)
-                        .then(result => makeRequest(protocol + leagueRegionShort[config.LeagueRegion] + '.api.riotgames.com/lol/league/v4/entries/by-summoner/' + result.id + '?api_key=' + apiKey))
+                        .then(result => {makeRequest(protocol + leagueRegionShort[config.LeagueRegion] + '.api.riotgames.com/lol/league/v4/entries/by-summoner/' + result.id + '?api_key=' + apiKey)})
                         .catch(error => engine.log('Error: ' + error))
                         .then(result => {
                             if (result[0] && result[0].tier) {
                                 compareLocalGroups(result[0], client.getServerGroups(), leagueRankGroupIDs, officialRankNamesArray, result[0].tier, client)
                             } else if (groupUndefined) {
-                                console.log('-------------WORKS---------')
                                 addServerGroupRanked(client, groupUndefined)
                             }
                         })
