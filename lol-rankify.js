@@ -202,12 +202,13 @@ registerPlugin({
             let chain = Promise.resolve()
             for (let client in clients) {
                 if (nameForSummonerSearch) {
-                    clientName = clients[client].nick()
+                    // clientName = clients[client].nick()
+                    chain = chain.then(resolve => mainEvent(clients[client], clients[client].nick())).then(delay(500))
                 } else {
-                    clientName = clients[client].description()
+                    // clientName = clients[client].description()
+                    chain = chain.then(resolve => mainEvent(clients[client], clients[client].description())).then(delay(500))
                 }
 
-                chain = chain.then(resolve => mainEvent(clients[client], clientName)).then(delay(500))
                 ev.client.chat('--> Reloaded rank of ' + clients[client].name() + '.')
             }
 
