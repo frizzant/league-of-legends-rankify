@@ -1,6 +1,6 @@
 registerPlugin({
     name: 'League Of Legends Rankify',
-    version: '1.3.1',
+    version: '1.3.2',
     backends: ['ts3'],
     description: 'Adds the corresponding League Of Legends Rank, Level, Role & InGame status for each user',
     author: 'Erin McGowan <sinusbot_lolrankify@protected.calmarsolutions.ch>',
@@ -202,12 +202,12 @@ registerPlugin({
             let chain = Promise.resolve()
             for (let client in clients) {
                 if (nameForSummonerSearch) {
-                    clientName = client.nick()
+                    clientName = clients[client].nick()
                 } else {
-                    clientName = client.description()
+                    clientName = clients[client].description()
                 }
 
-                chain = chain.then(resolve => mainEvent(clients[client], clientName));
+                chain = chain.then(resolve => mainEvent(clients[client], clientName)).then(delay(500))
                 ev.client.chat('--> Reloaded rank of ' + clients[client].name() + '.')
             }
 
@@ -238,6 +238,8 @@ registerPlugin({
             }
         }
     })
+
+    let delay = (time) => (result) => new Promise(resolve => setTimeout(() => resolve(result), time));
 
     function backendClientsReload() {
         clients = backend.getClients() // get list of all current clients
