@@ -10,7 +10,11 @@
 ![GitHub repo size](https://img.shields.io/github/repo-size/frizzant/league-of-legends-rankify)
 ![GitHub last commit](https://img.shields.io/github/last-commit/frizzant/league-of-legends-rankify)
 
-![GitHub stars](https://img.shields.io/github/stars/frizzant/league-of-legends-rankify?style=social)
+![liberapay](http://img.shields.io/liberapay/patrons/Frizzant.svg?logo=liberapay)
+![liberapay_give](http://img.shields.io/liberapay/receives/Frizzant.svg?logo=liberapay)
+
+<a href="https://liberapay.com/Frizzant/donate"><img alt="Donate using Liberapay" src="https://liberapay.com/assets/widgets/donate.svg"></a>
+
 
 This script connects your Sinusbot with the League Of Legends API,
 to get the rank of your users. Simply add the LOL username as the client/user
