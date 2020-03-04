@@ -109,10 +109,9 @@ This means less script executions, in favor of your server performance.
 **DrWarpMan** from the SinusBot Forums -> drwarpman@gmail.com
 https://forum.sinusbot.com/members/drwarpman.12874/
 
->DrWarpMan assisted me through parts of getting to know the SinusBot API and
-has developed a more sophisticated version of this script, with a multitude
-of options, which is available in exchange for a donation. He has the capability
-to make any of your scripting needs reality.
+>DrWarpMan assisted me through parts of getting to know the SinusBot API.
+He has the capability to make any of your scripting needs reality in
+>exchange for a donation.
 Hit him up at the above mentioned email, or via the Sinusbot Forums.
 
 [http://happy-forever.xyz]: www.happy-forever.xyz
