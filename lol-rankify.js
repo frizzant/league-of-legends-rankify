@@ -1,6 +1,6 @@
 registerPlugin({
     name: 'League Of Legends Rankify',
-    version: '1.3.2',
+    version: '1.3.3',
     backends: ['ts3'],
     description: 'Adds the corresponding League Of Legends Rank, Level, Role & InGame status for each user',
     author: 'Erin McGowan <sinusbot_lolrankify@protected.calmarsolutions.ch>',
@@ -200,14 +200,14 @@ registerPlugin({
             ev.client.chat('...reloading')
 
             let chain = Promise.resolve()
-            for (let client in clients) {
+            for (let client of clients) {
                 if (nameForSummonerSearch) {
                     chain = chain.then(resolve => mainEvent(clients[client], clients[client].nick()))
                 } else {
-                    chain = chain.then(resolve => mainEvent(clients[client], clients[client].description()))
+                    chain = chain.then(resolve => mainEvent(client, client.description())).then(delay(300))
                 }
 
-                ev.client.chat('--> Reloaded rank of ' + clients[client].name() + '.')
+                ev.client.chat('--> Reloaded rank of ' + client.name() + '.')
             }
 
             ev.client.chat('ALL ranks reloaded.')
@@ -254,7 +254,7 @@ registerPlugin({
                 if (client.getServerGroups().length > 0) {
 
                     makeRequest(apiUrlSummonerV4Name)
-                        .then(result => {makeRequest(protocol + leagueRegionShort[config.LeagueRegion] + '.api.riotgames.com/lol/league/v4/entries/by-summoner/' + result.id + '?api_key=' + apiKey)})
+                        .then(result => makeRequest(protocol + leagueRegionShort[config.LeagueRegion] + '.api.riotgames.com/lol/league/v4/entries/by-summoner/' + result.id + '?api_key=' + apiKey))
                         .catch(error => engine.log('Error: ' + error))
                         .then(result => {
                             if (result[0] && result[0].tier) {
