@@ -54,9 +54,7 @@ Or install it via NPM install.
 ### Hints
 
 1) It will not work without a verified RIOT API key. If you request it, chances are very high that you will get it.
-2) If you **NEED** your client descriptions for something crucial, and don't want to replace them
-with the clients summoner names, this script does not yet offer DB saved summoner names.
-
+2) If you **NEED** your client descriptions for something crucial, and don't want to replace them with the clients summoner names, you can now use the TS3 nickname of the client instead.
 
 #### User Nickname or Description*
 *default
