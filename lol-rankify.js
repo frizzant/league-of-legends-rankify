@@ -246,7 +246,6 @@ registerPlugin({
 
     function mainEvent(client, userName) {
         return new Promise(function (resolve, reject) {
-            console.log(client.name())
             if (userName.length > 2) {
 
                 apiUrlSummonerV4Name = protocol + leagueRegionShort[config.LeagueRegion] + '.api.riotgames.com/lol/summoner/v4/summoners/by-name/' + userName.replace(/ /g, '%20') + '?api_key=' + apiKey;
