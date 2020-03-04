@@ -1,6 +1,6 @@
 registerPlugin({
     name: 'League Of Legends Rankify',
-    version: '1.3.2',
+    version: '1.3.3',
     backends: ['ts3'],
     description: 'Adds the corresponding League Of Legends Rank, Level, Role & InGame status for each user',
     author: 'Erin McGowan <sinusbot_lolrankify@protected.calmarsolutions.ch>',
@@ -200,14 +200,14 @@ registerPlugin({
             ev.client.chat('...reloading')
 
             let chain = Promise.resolve()
-            for (let client in clients) {
+            for (let client of clients) {
                 if (nameForSummonerSearch) {
-                    chain = chain.then(resolve => mainEvent(clients[client], clients[client].nick())).then(delay(500))
+                    chain = chain.then(resolve => mainEvent(clients[client], clients[client].nick()))
                 } else {
-                    chain = chain.then(resolve => mainEvent(clients[client], clients[client].description())).then(delay(500))
+                    chain = chain.then(resolve => mainEvent(client, client.description())).then(delay(300))
                 }
 
-                ev.client.chat('--> Reloaded rank of ' + clients[client].name() + '.')
+                ev.client.chat('--> Reloaded rank of ' + client.name() + '.')
             }
 
             ev.client.chat('ALL ranks reloaded.')
@@ -246,6 +246,7 @@ registerPlugin({
 
     function mainEvent(client, userName) {
         return new Promise(function (resolve, reject) {
+            console.log(client.name())
             if (userName.length > 2) {
 
                 apiUrlSummonerV4Name = protocol + leagueRegionShort[config.LeagueRegion] + '.api.riotgames.com/lol/summoner/v4/summoners/by-name/' + userName.replace(/ /g, '%20') + '?api_key=' + apiKey;
@@ -259,7 +260,6 @@ registerPlugin({
                             if (result[0] && result[0].tier) {
                                 compareLocalGroups(result[0], client.getServerGroups(), leagueRankGroupIDs, officialRankNamesArray, result[0].tier, client)
                             } else if (groupUndefined) {
-                                console.log('-------------WORKS---------')
                                 addServerGroupRanked(client, groupUndefined)
                             }
                         })
