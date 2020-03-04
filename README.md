@@ -77,6 +77,10 @@ Write the command to the Bot with the active script.
 !lolreload all
 > reloads the rank of all clients. BEWARE that this script has no reate limiting included.
 
+!lolignoreme
+> adds you to the ignore list (store) so that your in-game status is not displayed.
+> This is simply a toggle. Write it a second time and you are removed from the list.
+
 #### Optional Commands
 
 !lolsetname \<SummonerName>
