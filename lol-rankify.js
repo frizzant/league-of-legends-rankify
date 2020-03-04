@@ -325,7 +325,11 @@ registerPlugin({
     function checkInGameStatus(client) {
         return new Promise(function (resolve, reject) {
 
-            let userName = client.description();
+            if (nameForSummonerSearch) {
+                let userName = client.nick();
+            } else {
+                let userName = client.description();
+            }
             if (userName.length > 2 && store.get(client.uid() + '_ignoreme') !== false) {
                 apiUrlSummonerV4Name = protocol + leagueRegionShort[config.LeagueRegion] + '.api.riotgames.com/lol/summoner/v4/summoners/by-name/' + userName.replace(/ /g, '%20') + '?api_key=' + apiKey;
 
