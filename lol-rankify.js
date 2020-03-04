@@ -341,7 +341,7 @@ registerPlugin({
 
         })
     }
-    // -------- END
+    // -------- END CHECK IF CLIENT / SUMMONER IS INGAME
 
     function compareServerGroups(serverGroupList, groupIDsArray, currentGroup, client) {
         for (let clientGroup of serverGroupList) { // client groups
