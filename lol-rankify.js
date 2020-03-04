@@ -202,7 +202,7 @@ registerPlugin({
             let chain = Promise.resolve()
             for (let client of clients) {
                 if (nameForSummonerSearch) {
-                    chain = chain.then(resolve => mainEvent(clients[client], clients[client].nick()))
+                    chain = chain.then(resolve => mainEvent(client, client.nick()))
                 } else {
                     chain = chain.then(resolve => mainEvent(client, client.description())).then(delay(300))
                 }
