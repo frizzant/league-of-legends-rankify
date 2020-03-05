@@ -54,9 +54,7 @@ Or install it via NPM install.
 ### Hints
 
 1) It will not work without a verified RIOT API key. If you request it, chances are very high that you will get it.
-2) If you **NEED** your client descriptions for something crucial, and don't want to replace them
-with the clients summoner names, this script does not yet offer DB saved summoner names.
-
+2) If you **NEED** your client descriptions for something crucial, and don't want to replace them with the clients summoner names, you can now use the TS3 nickname of the client instead.
 
 #### User Nickname or Description*
 *default
@@ -109,10 +107,9 @@ This means less script executions, in favor of your server performance.
 **DrWarpMan** from the SinusBot Forums -> drwarpman@gmail.com
 https://forum.sinusbot.com/members/drwarpman.12874/
 
->DrWarpMan assisted me through parts of getting to know the SinusBot API and
-has developed a more sophisticated version of this script, with a multitude
-of options, which is available in exchange for a donation. He has the capability
-to make any of your scripting needs reality.
+>DrWarpMan assisted me through parts of getting to know the SinusBot API.
+He has the capability to make any of your scripting needs reality in
+>exchange for a donation.
 Hit him up at the above mentioned email, or via the Sinusbot Forums.
 
 [http://happy-forever.xyz]: www.happy-forever.xyz
