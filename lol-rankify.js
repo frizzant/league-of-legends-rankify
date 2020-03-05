@@ -191,12 +191,12 @@ registerPlugin({
             clientName = ev.client.description()
         }
 
-        if (ev.text == '!lolreload') {
+        if (ev.text === '!lolreload') {
             console.log('Reloaded Rank of: ' + ev.client.name() )
             mainEvent(client = ev.client, clientName)
             ev.client.chat(message.rankReload)
         }
-        if (ev.text == '!lolreload all') {
+        if (ev.text === '!lolreload all') {
             ev.client.chat('...reloading')
 
             let chain = Promise.resolve()
@@ -220,7 +220,7 @@ registerPlugin({
             mainEvent(client = ev.client, clientName)
             ev.client.chat(message.rankReload)
         }
-        if (ev.text == '!lolignoreme') {
+        if (ev.text === '!lolignoreme') {
             lolIgnore()
             function lolIgnore () {
                 let clientUID = ev.client.uid()
@@ -245,7 +245,7 @@ registerPlugin({
     }
 
     function mainEvent(client, userName) {
-        return new Promise(function (resolve, reject) {
+        return new Promise(function (resolve) {
             if (userName.length > 2) {
 
                 apiUrlSummonerV4Name = protocol + leagueRegionShort[config.LeagueRegion] + '.api.riotgames.com/lol/summoner/v4/summoners/by-name/' + userName.replace(/ /g, '%20') + '?api_key=' + apiKey;
@@ -298,20 +298,20 @@ registerPlugin({
         setInterval(interval, inGameFunctionInterval * 1000)
     }
     function summonerNotInGame(client) {
-        return new Promise(function (resolve, reject) {
+        return new Promise(function (resolve) {
             simpleServerGroupRemove(client, inGameGroupId)
             resolve()
         })
     }
     function summonerInGame(client) {
-        return new Promise(function (resolve, reject) {
+        return new Promise(function (resolve) {
             addServerGroupRanked(client, inGameGroupId)
             resolve()
         })
     }
 
     function checkResult(client, result) { // used instead of .catch()
-        return new Promise(function (resolve, reject) {
+        return new Promise(function (resolve) {
             if (result !== undefined) {
                 summonerInGame(client, result)
             } else {
@@ -322,7 +322,7 @@ registerPlugin({
     }
 
     function checkInGameStatus(client) {
-        return new Promise(function (resolve, reject) {
+        return new Promise(function (resolve) {
 
             let userName
             if (nameForSummonerSearch) {
@@ -359,7 +359,7 @@ registerPlugin({
     }
 
     function checkLaneStats(parsed, client) {
-        return new Promise(function (resolve, reject) {
+        return new Promise(function (resolve) {
             if (summonerLaneGroupIDsArray.length > 4) {
                 let map = new Map()
                 map.set('TOP', 0)
@@ -452,7 +452,7 @@ registerPlugin({
     }
 
     function compareLocalGroups(parsed, currentGroups, groupArrayIDs, groupNamesArray, newGroupName, client) {
-        return new Promise(function (resolve, reject) {
+        return new Promise(function (resolve) {
             let count = 0
             let countMax = currentGroups.length * groupArrayIDs.length
             let compareSwitch = false
@@ -478,7 +478,7 @@ registerPlugin({
     }
 
     function compareGroup(parsed, currentGroup, theNewGroupIdArray, theNewGroupNameArray, newGroupName, client) { // beware that currentGroup will be removed!
-        return new Promise(function (resolve, reject) {
+        return new Promise(function (resolve) {
             if (parsed) {
                 let newGroup = theNewGroupNameArray.indexOf(newGroupName) // get the index by string
                 newGroup = theNewGroupIdArray[newGroup] // insert index to get correct group
@@ -499,7 +499,7 @@ registerPlugin({
     }
 
     function addServerGroupRanked(client, group) {
-        return new Promise(function (resolve, reject) {
+        return new Promise(function (resolve) {
             let count = 0
             let max = client.getServerGroups().length
             for (let groupId of client.getServerGroups()) {
@@ -518,14 +518,14 @@ registerPlugin({
     }
 
     function removeServerGroupRanked(group, client) {
-        return new Promise(function (resolve, reject) {
+        return new Promise(function (resolve) {
             client.removeFromServerGroup(group)
             resolve()
         })
     }
 
     function simpleServerGroupRemove(client, groupToRemove) {
-        return new Promise(function (resolve, reject) {
+        return new Promise(function (resolve) {
             for (let group of client.getServerGroups()) {
                 if (group.id() == groupToRemove) {
                     client.removeFromServerGroup(groupToRemove)
