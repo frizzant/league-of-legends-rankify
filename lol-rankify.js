@@ -286,7 +286,6 @@ registerPlugin({
 
     // -------- CHECK IF CLIENT / SUMMONER IS INGAME
     function interval() {
-        // runs every 60 sec and runs on init.
         backendClientsReload()
         let statusChain = Promise.resolve()
         for (let client of clients) {
@@ -294,6 +293,7 @@ registerPlugin({
         }
     }
     if (inGameGroupId && inGameFunctionInterval) { // disable in-game status if no input in backend
+        // runs every 60 sec and runs on init.
         interval();
         setInterval(interval, inGameFunctionInterval * 1000)
     }
