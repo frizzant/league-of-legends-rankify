@@ -88,7 +88,7 @@ Write the command to the Bot with the active script.
 
 ---
 
-### Minimal Ressources
+### Minimal Resources
 The group gets added on `event` `clientVisible`. This means, in most cases it will
 update only when a user connects/reconnects, not on every channel switch.
 This means less script executions, in favor of your server performance.
