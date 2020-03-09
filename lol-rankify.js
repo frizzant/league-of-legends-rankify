@@ -169,6 +169,7 @@ registerPlugin({
     if (!rankQueueTypeSelection) {
         rankQueueTypeSelection = 0
     }
+    let summonerTier
     //--
     // Objects
     //--
@@ -257,6 +258,7 @@ registerPlugin({
     function mainEvent(client, userName) {
         return new Promise(function (resolve) {
             if (userName.length > 2) {
+                console.log(userName)
 
                 apiUrlSummonerV4Name = protocol + leagueRegionShort[config.LeagueRegion] + '.api.riotgames.com/lol/summoner/v4/summoners/by-name/' + userName.replace(/ /g, '%20') + '?api_key=' + apiKey;
 
@@ -266,11 +268,19 @@ registerPlugin({
                         .then(result => makeRequest(protocol + leagueRegionShort[config.LeagueRegion] + '.api.riotgames.com/lol/league/v4/entries/by-summoner/' + result.id + '?api_key=' + apiKey))
                         .catch(error => engine.log('Error: ' + error))
                         .then(result => {
-                            if (result[0] && result[0].tier) {
-                                compareLocalGroups(result[0], client.getServerGroups(), leagueRankGroupIDs, officialRankNamesArray, result[0].tier, client)
-                            } else if (groupUndefined) {
-                                addServerGroupRanked(client, groupUndefined)
-                            }
+                            return new Promise(function (resolve) {
+                                if (result[0] && result[0].tier) {
+                                    rankQueueTypeSwitch(result)
+                                        .then(result => {
+                                            compareLocalGroups(result, client.getServerGroups(), leagueRankGroupIDs, officialRankNamesArray, summonerTier, client)
+                                        }).then(result => {
+                                            resolve(result)
+                                        })
+                                } else if (groupUndefined) {
+                                    addServerGroupRanked(client, groupUndefined)
+                                    resolve(result)
+                                }
+                            })
                         })
                         .catch(error => engine.log('Error: ' + error))
                         .then(result => makeRequest(protocol + leagueRegionShort[config.LeagueRegion] + '.api.riotgames.com/lol/match/v4/matchlists/by-account/' + requestArray[0].accountId + '?api_key=' + apiKey + '&endIndex=' + gameHistoryCount))
@@ -356,6 +366,51 @@ registerPlugin({
         })
     }
     // -------- END CHECK IF CLIENT / SUMMONER IS INGAME
+    function rankQueueTypeSwitch(result) {
+        return new Promise(function (resolve) {
+            summonerTier = ''
+            let compareTiers = []
+
+            for (let item of result) {
+                if (rankQueueTypeSelection === '0') { // both
+                    compareTiers.push(item.tier)
+                } else if (rankQueueTypeSelection === '1') { // solo
+                    if (item.queueType === 'RANKED_SOLO_5x5') {
+                        summonerTier = item.tier
+                    }
+                } else if (rankQueueTypeSelection === '2') { // flex
+                    if (item.queueType === 'RANKED_FLEX_SR') {
+                        summonerTier = item.tier
+                    }
+                }
+            }
+
+            if (rankQueueTypeSelection === '0' && compareTiers.length > 0) {
+                compareStringToIndex(compareTiers[0], compareTiers[1])
+            } else {
+                resolve(result)
+            }
+
+            function compareStringToIndex(tierOne, tierTwo) {
+                // compare name to index, get the value and use the highest defined value
+                let indexOne = officialRankNamesArray.indexOf(tierOne)
+                let indexTwo = officialRankNamesArray.indexOf(tierTwo)
+
+                if (tierOne && tierTwo) {
+                    if (indexOne >= indexTwo) {
+                        summonerTier = tierOne
+                    } else if (indexTwo > indexOne) {
+                        summonerTier = tierTwo
+                    }
+                } else if (tierOne) {
+                    summonerTier = tierOne
+                } else if (tierTwo) {
+                    summonerTier = tierTwo
+                }
+                resolve(result)
+            }
+        })
+    }
 
     function compareServerGroups(serverGroupList, groupIDsArray, currentGroup, client) {
         for (let clientGroup of serverGroupList) { // client groups
@@ -369,8 +424,10 @@ registerPlugin({
     }
 
     function checkLaneStats(parsed, client) {
+        console.log(client) // todo fix when 'evvii'
+        console.log(parsed)
         return new Promise(function (resolve) {
-            if (summonerLaneGroupIDsArray.length > 4) {
+            if (summonerLaneGroupIDsArray.length > 4 && parsed && parsed.matches) {
                 let map = new Map()
                 map.set('TOP', 0)
                 map.set('MID', 0)
@@ -412,6 +469,7 @@ registerPlugin({
                 }
 
                 compareLocalGroups(parsed, client.getServerGroups(), summonerLaneGroupIDsArray, officialLaneNamesArray, mostUsedLaneName, client)
+
                 resolve(parsed)
             } else {
                 resolve(parsed)
@@ -483,7 +541,12 @@ registerPlugin({
                     }
                 }
             }
+
             simpleServerGroupRemove(client, groupUndefined) // remove rank undefined group if client has it
+
+            if (!newGroupName) {
+                resolve()
+            }
         })
     }
 
