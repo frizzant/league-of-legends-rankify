@@ -19,6 +19,12 @@ registerPlugin({
             options: ['br1', 'eun1', 'euw1', 'jp1', 'kr', 'la1', 'la2', 'na1', 'oc1', 'tr1', 'ru']
         },
         {
+            name: 'RankQueueType',
+            title: 'Select the Rank-queue/s you want to show. DEFAULT = highest of both ranks',
+            type: 'select',
+            options: ['highest of both ranks', 'solo/duo rank', 'flex rank']
+        },
+        {
             name: 'NameForSummonerSearch',
             title: 'Select if you want to use "TS3 User Nicknames" INSTEAD of the "TS3 User Description" in this script. DEFAULT = description',
             type: 'checkbox',
@@ -158,6 +164,10 @@ registerPlugin({
     let inGameFunctionInterval = config.inGameFunctionInterval
     if (!inGameFunctionInterval) {
         inGameFunctionInterval = 60
+    }
+    let rankQueueTypeSelection = config.RankQueueType
+    if (!rankQueueTypeSelection) {
+        rankQueueTypeSelection = 0
     }
     //--
     // Objects
