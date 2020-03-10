@@ -1,6 +1,6 @@
 registerPlugin({
     name: 'League Of Legends Rankify',
-    version: '1.3.4',
+    version: '1.4.0',
     backends: ['ts3'],
     description: 'Adds the corresponding League Of Legends Rank, Level, Role & InGame status for each user',
     author: 'Erin McGowan <sinusbot_lolrankify@protected.calmarsolutions.ch>',
