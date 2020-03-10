@@ -258,7 +258,6 @@ registerPlugin({
     function mainEvent(client, userName) {
         return new Promise(function (resolve) {
             if (userName.length > 2) {
-                console.log(userName)
 
                 apiUrlSummonerV4Name = protocol + leagueRegionShort[config.LeagueRegion] + '.api.riotgames.com/lol/summoner/v4/summoners/by-name/' + userName.replace(/ /g, '%20') + '?api_key=' + apiKey;
 
@@ -278,6 +277,8 @@ registerPlugin({
                                         })
                                 } else if (groupUndefined) {
                                     addServerGroupRanked(client, groupUndefined)
+                                    resolve(result)
+                                } else {
                                     resolve(result)
                                 }
                             })
@@ -424,8 +425,6 @@ registerPlugin({
     }
 
     function checkLaneStats(parsed, client) {
-        console.log(client) // todo fix when 'evvii'
-        console.log(parsed)
         return new Promise(function (resolve) {
             if (summonerLaneGroupIDsArray.length > 4 && parsed && parsed.matches) {
                 let map = new Map()
