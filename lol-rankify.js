@@ -621,6 +621,11 @@ registerPlugin({
                     reject(error)
                 }
 
+                if (response.statusCode == 403) {
+                    console.log('YOUR API KEY IS INVALID.')
+                    reject(response.status)
+                }
+
                 if (response.statusCode == 404) {
                     reject(response.status)
                 }
