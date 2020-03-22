@@ -622,7 +622,7 @@ registerPlugin({
                 }
 
                 if (response.statusCode == 403) {
-                    console.log('YOUR API KEY IS INVALID.')
+                    console.log('YOUR API KEY WAS REJECTED.')
                     reject(response.status)
                 }
 
