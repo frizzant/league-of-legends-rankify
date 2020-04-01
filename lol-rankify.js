@@ -1,6 +1,6 @@
 registerPlugin({
     name: 'League Of Legends Rankify',
-    version: '1.4.1',
+    version: '1.4.2',
     backends: ['ts3'],
     description: 'Adds the corresponding League Of Legends Rank, Level, Role & InGame status for each user',
     author: 'Erin McGowan <sinusbot_lolrankify@protected.calmarsolutions.ch>',
@@ -150,7 +150,6 @@ registerPlugin({
     const nameForSummonerSearch = config.NameForSummonerSearch
     //--
     // Derived Variables
-    function clientBackend() {}
     let clients // setting them in mainEvent now
     let clientName
     let leagueRegionShort = ['br1', 'eun1', 'euw1', 'jp1', 'kr', 'la1', 'la2', 'na1', 'oc1', 'tr1', 'ru']
